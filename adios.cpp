@@ -103,6 +103,19 @@ void adios_parameters::get_rare_sites(Dataset& data)
     }
 }
 
+void adios_parameters::calculate_emission_mats(const Dataset& data) {
+    std::set<double> fqs;
+    for (auto c : data.chromosomes) {
+        for (auto f : c->frequencies) {
+            fqs.insert(f);
+        }
+    }
+    for (auto fq : fqs) {
+        Matrix m = Linalg::matrix_product(allele_error_mat, emission_matrix(fq));
+        emission_mats[fq] = m;
+    }
+}
+
 adios_sites find_informative_sites(const Indptr& ind1,
                                    const Indptr& ind2,
                                    const int chromidx,
@@ -244,8 +257,6 @@ void adios(Dataset& d, const adios_parameters& params)
         for (size_t pairidx = 0; pairidx < pairs.size(); ++pairidx) {
             Indptr_pair pair = pairs[pairidx];
 
-            std::cout.flush();
-
             adios_pair(pair, chridx, params);
 
         }
@@ -283,8 +294,8 @@ void adios_pair(const Indptr_pair& inds,
     // Make the emission matrices
     std::vector<Matrix> emissions;
     for (int i = 0; i < nmark; ++i) {
-        Matrix emiss = emission_matrix(freqs[i]);
-        emiss = Linalg::matrix_product(params.allele_error_mat, emiss);
+        // Lookup the precomputed matrix
+        Matrix emiss = params.emission_mats.at(freqs[i]);
         emissions.push_back(emiss);
     }
 

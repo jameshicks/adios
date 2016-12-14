@@ -91,6 +91,11 @@ int main(int argc, char** argv) {
 
     params.get_rare_sites(data);
 
+    // If we calculated the data we can round them to a sensible place too.
+    if (empirical_freqs) {
+        data.round_frequencies(4);
+    }
+
     std::cout << data.ninds() << " individuals" << std::endl;
     for (size_t chridx = 0; chridx < data.nchrom(); ++chridx) {
         auto c = data.chromosomes[chridx];
@@ -109,6 +114,8 @@ int main(int argc, char** argv) {
         std::cout << std::endl;
     }
 
+    // Precompute the emission matrices.
+    params.calculate_emission_mats(data);
 
     adios::adios(data, params);
 }

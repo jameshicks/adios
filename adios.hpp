@@ -2,6 +2,7 @@
 #define ADIOS_HPP
 
 #include <map>
+#include <set>
 #include <utility> // for std::pair 
 #include <cmath> // For log
 #include <memory>
@@ -9,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+
 
 
 #include "combinatorics.hpp"
@@ -29,17 +31,19 @@ using std::pair;
 
 // Parameters for ADIOS.
 struct adios_parameters {
-    double rare_thresh;                        // Rare variant frequency threshold 
-    double err_rate;                           // Allele error rate
-    Matrix allele_error_mat;                   // Matrix of genotyping error probabilitiez
-    Matrix transition_mat;                     // HMM transition matrix
-    std::vector<std::vector<int>> rare_sites;  // The set of sites with rare variation
-    int gamma_;                                // Probability to enter IBD (10^(-gamma))
-    int rho;                                   // Probability of exitiing IBD (10^(-rho))
-    int min_length;                            // Minimum segment length of to consider
-    size_t min_mark;                           // Minimum number of markers allowed in a segment
-    double min_lod;                            // Minimum allowed quality score
-    void get_rare_sites(Dataset& data);        // Get the rare sites
+    double rare_thresh;                             // Rare variant frequency threshold 
+    double err_rate;                                // Allele error rate
+    Matrix allele_error_mat;                        // Matrix of genotyping error probabilitiez
+    Matrix transition_mat;                          // HMM transition matrix
+    std::vector<std::vector<int>> rare_sites;       // The set of sites with rare variation
+    int gamma_;                                     // Probability to enter IBD (10^(-gamma))
+    int rho;                                        // Probability of exitiing IBD (10^(-rho))
+    int min_length;                                 // Minimum segment length of to consider
+    size_t min_mark;                                // Minimum number of markers allowed in a segment
+    double min_lod;                                 // Minimum allowed quality score
+    void get_rare_sites(Dataset& data);             // Get the rare sites
+    void calculate_emission_mats(const Dataset& d); // Precompute emission matrices
+    std::map<double, Matrix> emission_mats;         // Precomputer emission mats
 };
 
 

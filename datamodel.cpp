@@ -133,3 +133,11 @@ shared_ptr<ChromInfo> Dataset::add_chromosome(const std::string& lab) {
     }
     return c;
 }
+
+void Dataset::round_frequencies(unsigned int places) {
+    for (auto c : chromosomes) {
+        for (size_t i=0; i<c->frequencies.size(); ++i) {
+            c->frequencies[i] = round(c->frequencies[i], places);
+        }
+    }
+}

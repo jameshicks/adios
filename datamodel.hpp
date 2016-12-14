@@ -11,6 +11,7 @@
 #include <iterator>
 #include <iostream>
 
+#include "common.hpp"
 #include "setops.hpp"
 
 using std::shared_ptr;
@@ -92,6 +93,7 @@ public:
     // int ngeno(void);
     shared_ptr<Individual> add_individual(const std::string& label);
     shared_ptr<ChromInfo> add_chromosome(const std::string& label);
+    void round_frequencies(unsigned int places);
 
 };
 

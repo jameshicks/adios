@@ -6,7 +6,7 @@
 #include <sstream>
 #include <utility>
 #include <iomanip>
-
+#include <math.h>
 
 std::vector<std::string> slice(std::vector<std::string>& inp,
                                size_t start,
@@ -15,6 +15,9 @@ size_t indexof(std::vector<std::string>& v, std::string& val);
 
 std::string sfloat(double v, unsigned int places);
 std::string bp_formatter(unsigned int bp);
+
+
+inline double round(double val, unsigned int places) {  return roundf(val*pow(10, places)) / pow(10,places); } 
 struct ValueRun {
     size_t start;
     size_t stop;
