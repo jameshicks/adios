@@ -8,7 +8,6 @@ GenotypeHMM::GenotypeHMM(const std::vector<int>& obs,
     observations = obs;
     nstates = transition.nrow;
     emission_matrices = emissions;
-    // Matrix transition_matrix(nstates, nstates);
     transition_matrix = transition;
 
 }
@@ -63,7 +62,6 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
         col = col / col.sum(); // Normalize again;
 
         bwmat.set_column(obsidx - 1, col);
-        // obsidx--;
     }
 
 
