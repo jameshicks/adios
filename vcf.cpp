@@ -3,15 +3,21 @@
 // VCF Parsing
 
 VCFRecordGenotypeContainer::VCFRecordGenotypeContainer(size_t n) {
-    alts.reserve(2 * n);
-    missing.reserve(n);
+    ninds = n;
+    alts.reserve(2 * ninds);
+    missing.reserve(ninds);
+}
+
+double VCFRecordGenotypeContainer::allele_frequency(void) const {
+    return alts.size() / (double)(2 * (ninds - missing.size()));
 }
 
 
-void VCFRecord::set_freq(const std::string& info_field) {
+double VCFRecord::get_info_freq(const std::string& info_field) {
     std::string val = get_info_by_key(info_field.c_str());
     if (val.empty()) freq = 0.0;
     freq = atof(val.c_str());
+    return freq;
 }
 
 std::string VCFRecord::get_info_by_key(const char* key) {
@@ -181,6 +187,8 @@ Dataset read_vcf(const std::string & filename, const std::string & freq_field) {
     using stringops::split;
     using std::vector;
 
+    bool use_empirical_freqs = (freq_field.compare("__ADIOSEMPIRICALFREQS") == 0);
+
     Dataset data;
     std::ifstream vcffile(filename);
 
@@ -253,8 +261,8 @@ Dataset read_vcf(const std::string & filename, const std::string & freq_field) {
         //     continue;
         // }
 
-        rec.set_freq(freq_field);
-        data.chromosomes[chromidx]->add_variant(rec.label, rec.pos, rec.freq);
+        double fq = use_empirical_freqs ? con.allele_frequency() : rec.get_info_freq(freq_field);
+        data.chromosomes[chromidx]->add_variant(rec.label, rec.pos, fq);
 
 
         for (size_t i = 0; i < con.missing.size(); ++i) {

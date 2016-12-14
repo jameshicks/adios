@@ -19,12 +19,15 @@
 #include "datamodel.hpp"
 
 struct VCFRecordGenotypeContainer {
+    size_t ninds; 
     std::vector<size_t> missing;
     std::vector<size_t> alts;
     VCFRecordGenotypeContainer(size_t n);
+    double allele_frequency(void) const;
     inline bool monomorphic(void) const { return alts.size() == 0; }
     inline bool singleton(void) const { return alts.size() == 1; }
     inline void clear(void) { missing.clear(); alts.clear(); }
+
 
 };
 
@@ -43,7 +46,7 @@ public:
     std::map<std::string, std::string> infomap(void) const;
     std::string get_info_by_key(const char* key);
     void get_minor_alleles(VCFRecordGenotypeContainer& container) const;
-    void set_freq(const std::string& info_field);
+    double get_info_freq(const std::string& info_field);
     inline int nalleles(void) const;
     inline bool is_snv(void) const;
 };
