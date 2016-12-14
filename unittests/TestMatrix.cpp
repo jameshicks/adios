@@ -163,6 +163,20 @@ TEST(Matrix, MatrixVectorProducts) {
     CHECK(vector_matrix_product(v,B) ==  expected);
 }
 
+TEST(Matrix, MatrixDiagonalProducts) {
+    using Linalg::Matrix;
+    using Linalg::Vector;
+    Matrix a = {{1,2,3}, {4,5,6}, {7,8,9}};
+    Vector v = {3,2,1};
+    Matrix observed = Linalg::matrix_dmatrix_product(a,v);
+    Matrix expected = Linalg::matrix_product(a, Linalg::diag(v));
+    CHECK(observed == expected);
+
+    observed = Linalg::dmatrix_matrix_product(v,a);
+    expected = Linalg::matrix_product(Linalg::diag(v), a);
+    CHECK(observed == expected);
+}
+
 TEST(Matrix, ViewObjects) {
     using namespace Linalg;
     Matrix A = {{1,2,3}, {4,5,6}, {7,8,9}};

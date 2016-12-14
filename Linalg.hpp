@@ -202,6 +202,11 @@ Matrix direct_product(const Matrix& a, const Matrix& b);
 Vector vector_matrix_product(const Vectorlike& v, const Matrix& b);
 Vector matrix_vector_product(const Matrix& a, const Vectorlike& v);
 
+// A matrix post-multiplied by a diagonal matrix
+Matrix dmatrix_matrix_product(const Vectorlike& v, const Matrix& a);
+
+// A matrix post-multiplied by a diagonal matrix
+Matrix matrix_dmatrix_product(const Matrix& a, const Vectorlike& v);
 
 }
 

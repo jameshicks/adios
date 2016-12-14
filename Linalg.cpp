@@ -562,5 +562,28 @@ Vector matrix_vector_product(const Matrix& a, const Vectorlike& v) {
     return outp;
 }
 
+Matrix dmatrix_matrix_product(const Vectorlike& v, const Matrix& a) {
+    // Post-multiplying by a diagonal matrix multiplies row i by
+    // the ith diagonal element
+    if (!a.is_square() && a.nrow == v.size) { throw std::invalid_argument("Nonconformable operands"); }
+    Matrix z(a);
+    for (size_t i=0; i < v.size; ++i) {
+        auto row = z.row_view(i);
+        row.inplace_mul(v.get(i));
+    }
+    return z;
+}
+
+Matrix matrix_dmatrix_product(const Matrix& a, const Vectorlike& v) {
+    // Post-multiplying by a diagonal matrix multiplies column j by
+    // the jth diagonal element
+    if (!a.is_square() && a.nrow == v.size) { throw std::invalid_argument("Nonconformable operands"); }
+    Matrix z(a);
+    for (size_t j=0; j < v.size; ++j) {
+        auto col = z.col_view(j);
+        col.inplace_mul(v.get(j));
+    }
+    return z;
+}
 }
 
