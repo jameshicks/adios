@@ -33,7 +33,7 @@ using std::pair;
 struct adios_parameters {
     double rare_thresh;                             // Rare variant frequency threshold 
     double err_rate;                                // Allele error rate
-    Matrix allele_error_mat;                        // Matrix of genotyping error probabilitiez
+    Matrix allele_error_mat;                        // Matrix of genotyping error probabilities
     Matrix transition_mat;                          // HMM transition matrix
     std::vector<std::vector<int>> rare_sites;       // The set of sites with rare variation
     int gamma_;                                     // Probability to enter IBD (10^(-gamma))
@@ -43,7 +43,7 @@ struct adios_parameters {
     double min_lod;                                 // Minimum allowed quality score
     void get_rare_sites(Dataset& data);             // Get the rare sites
     void calculate_emission_mats(const Dataset& d); // Precompute emission matrices
-    std::map<double, Matrix> emission_mats;         // Precomputer emission mats
+    std::map<double, Matrix> emission_mats;         // Precomputed emission matrices indexed by frequency
 };
 
 
