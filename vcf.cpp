@@ -220,11 +220,10 @@ Dataset read_vcf(const std::string & filename, const std::string & freq_field) {
         con.clear();
 
         if (rec.chrom.compare(last_chromid)) {
-            if (chromidx >-1 && !data.chromosomes[chromidx]->size()) {
+            if (chromidx >-1 && (data.chromosomes[chromidx]->nmark()==0)) {
                 data.chromosomes[chromidx]->label = rec.chrom;
             } else { 
-                
-            data.add_chromosome(rec.chrom);
+                data.add_chromosome(rec.chrom);
                 chromidx++;
             }
             markidx = 0;
