@@ -52,9 +52,8 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
     {
 
         const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : emission_matrices.at(obsidx-1);
-        auto bwrv = bwmat.get_column(obsidx);
+        auto bwrv = bwmat.col_view(obsidx);
 
-        ///                                                      +++++++++++++++++++++
         auto emission_diag = Linalg::diag(cur_obs_probs.get_row(observations[obsidx - 1]));
         Matrix a = Linalg::matrix_product(transition_matrix, emission_diag);
 
