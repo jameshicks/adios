@@ -1,0 +1,4 @@
+*~
+*.o
+support/*
+*.sublime*
