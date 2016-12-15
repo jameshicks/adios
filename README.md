@@ -12,6 +12,7 @@ Segments are returned with a LOD-score style quality metric to quantify the conf
 + `--keep_singletons`: Include singleton variants in dataset
 + `--keep_monomorphic`: Include monomorphic positions in dataset
 + `--empirical_freqs`: Calculate allele frequencies from data (supercedes `--vcf_freq`)
++ `--freq_floor`: Minimum frequency used in calculations
 + `--rare`: Alleles below this frequency are included as rare alleles.
 + `--minlength`: Minimum segment length to report (in megabases)
 + `--minmark`: Minimum number of markers to declare IBD

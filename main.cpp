@@ -29,8 +29,9 @@ int main(int argc, char** argv) {
         CommandLineArgument{"vcf_freq",          "store",     {"AF"},     1,    "VCF INFO field containing allele frequency"},
         CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},     0,    "Calculate allele frequencies from data"},
         CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},     0,    "Include singleton variants from dataset"},
-        CommandLineArgument{"keep_monomorphic", "store_yes", {"NO"},     0,    "Include monomorphic positions in dataset"},
+        CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},     0,    "Include monomorphic positions in dataset"},
         CommandLineArgument{"rare",              "store",     {"0.05"},   1,    "Rare frequency threshold"},
+        CommandLineArgument{"freq_floor",        "store",     {"0.001"},  1,    "Variants with frequencies below this are set to this"},
         CommandLineArgument{"minlod",            "store",     {"3.0"},    1,    "Minimum IBDLOD"},
         CommandLineArgument{"minlength",         "store",     {"1.0"},    1,    "Miniumum segment length (Mb)"},
         CommandLineArgument{"minmark",           "store",     {"16"},     1,    "Minimum number of markers to establish IBD"},
@@ -85,8 +86,7 @@ int main(int argc, char** argv) {
                       empirical_freqs, 
                       args["vcf_freq"][0]};
     Dataset data;
-    try {
-            
+    try {   
         data = read_vcf(args["vcf"][0], vcfp);
     } catch (const std::invalid_argument& e) {
         std::cerr << "Could not open file: " << args["vcf"][0] << std::endl;
@@ -99,6 +99,8 @@ int main(int argc, char** argv) {
     if (empirical_freqs) {
         data.round_frequencies(4);
     }
+
+    data.floor_frequencies(std::stod(args["freq_floor"][0]));
 
     std::cout << data.ninds() << " individuals" << std::endl;
     for (size_t chridx = 0; chridx < data.nchrom(); ++chridx) {

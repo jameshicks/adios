@@ -141,3 +141,12 @@ void Dataset::round_frequencies(unsigned int places) {
         }
     }
 }
+
+void Dataset::floor_frequencies(double floor) {
+    for (auto c : chromosomes) {
+        for (size_t i=0; i<c->frequencies.size(); ++i) {
+            double fq = c->frequencies[i];
+            c->frequencies[i] = fq < floor ? floor : fq;
+        }
+    }
+}
