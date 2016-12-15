@@ -19,7 +19,6 @@ Matrix transition_matrix(int l10gamma, int l10rho)
 
 Matrix genotype_error_matrix(double eps)
 {
-    eps = 0.001;
     const double eta = 1 - eps;
 
     const double eta_sq = pow(eta, 2);
