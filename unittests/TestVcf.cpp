@@ -44,3 +44,18 @@ TEST(VCF, VCFEmpiricalFrequency) {
     CHECK(expected_freqs == observed_freqs);
 
 }
+
+TEST(VCF, MinorAlleleInvert) {
+    VCFRecordGenotypeContainer con(3);
+    
+    // std::string line = "1   10  rs100   A   C   100 PASS    AF=.5   GT  0/0 0/0 0/0";
+    // VCFRecord rec(line);
+
+    con.alts = {0,1,4,5};
+    con.invert();
+
+    std::vector<size_t> expected = {2,3};
+    CHECK(con.alts == expected);
+
+
+}

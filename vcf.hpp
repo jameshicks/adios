@@ -12,6 +12,8 @@
 #include <numeric>
 #include <string.h>
 #include <stdlib.h>
+#include <iterator>
+#include <algorithm>
 
 
 #include "common.hpp"
@@ -23,6 +25,7 @@ struct VCFRecordGenotypeContainer {
     std::vector<size_t> missing;
     std::vector<size_t> alts;
     VCFRecordGenotypeContainer(size_t n);
+    void invert(void);
     double allele_frequency(void) const;
     inline bool monomorphic(void) const { return alts.size() == 0; }
     inline bool singleton(void) const { return alts.size() == 1; }

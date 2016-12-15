@@ -12,6 +12,22 @@ double VCFRecordGenotypeContainer::allele_frequency(void) const {
     return alts.size() / (double)(2 * (ninds - missing.size()));
 }
 
+void VCFRecordGenotypeContainer::invert(void) {
+    std::vector<size_t> skips;
+    std::set_union(missing.begin(), missing.end(), 
+                   alts.begin(), alts.end(), 
+                   std::back_inserter(skips));
+    
+    alts.clear();
+
+    std::vector<size_t> new_alts;
+    for (size_t i = 0; i<2*ninds; i++) { new_alts.push_back(i); }
+
+    std::set_difference(new_alts.begin(), new_alts.end(), 
+                        skips.begin(), skips.end(), 
+                        std::back_inserter(alts));
+
+}
 
 double VCFRecord::get_info_freq(const std::string& info_field) {
     std::string val = get_info_by_key(info_field.c_str());
@@ -263,6 +279,11 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
         double fq = fileparams.empirical_freqs ?
                     con.allele_frequency() :
                     rec.get_info_freq(fileparams.freq_field);
+
+        if (fq > 0.5) {
+            con.invert();
+            fq = 1-fq;
+        }
 
         data.chromosomes[chromidx]->add_variant(rec.label, rec.pos, fq);
 
