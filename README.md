@@ -9,6 +9,7 @@ Segments are returned with a LOD-score style quality metric to quantify the conf
 ## Options
 + `--vcf`: VCF input file
 + `--vcf_freq`: INFO field in vcf to use as allele frequency
++ `--keep_singletons`: Include singleton variants from dataset
 + `--empirical_freqs`: Calculate allele frequencies from data (supercedes `--vcf_freq`)
 + `--rare`: Alleles below this frequency are included as rare alleles.
 + `--minlength`: Minimum segment length to report (in megabases)

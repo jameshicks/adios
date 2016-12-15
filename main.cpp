@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
         CommandLineArgument{"vcf",               "store",     {""},       1,    "VCF input file"},
         CommandLineArgument{"vcf_freq",          "store",     {"AF"},     1,    "VCF INFO field containing allele frequency"},
         CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},     0,    "Calculate allele frequencies from data"},
+        CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},     0,    "Include singleton variants from dataset"},
         CommandLineArgument{"rare",              "store",     {"0.05"},   1,    "Rare frequency threshold"},
         CommandLineArgument{"minlod",            "store",     {"3.0"},    1,    "Minimum IBDLOD"},
         CommandLineArgument{"minlength",         "store",     {"1.0"},    1,    "Miniumum segment length (Mb)"},
@@ -78,7 +79,10 @@ int main(int argc, char** argv) {
     cout << "Genotype error rate: " << params.err_rate << '\n';
     cout << endl;
 
-    VCFParams vcfp = {false, true, empirical_freqs, args["vcf_freq"][0]};
+    VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0), 
+                      true, 
+                      empirical_freqs, 
+                      args["vcf_freq"][0]};
     Dataset data;
     try {
             
