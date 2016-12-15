@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
         CommandLineArgument{"vcf_freq",          "store",     {"AF"},     1,    "VCF INFO field containing allele frequency"},
         CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},     0,    "Calculate allele frequencies from data"},
         CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},     0,    "Include singleton variants from dataset"},
+        CommandLineArgument{"keep_monomorphic", "store_yes", {"NO"},     0,    "Include monomorphic positions in dataset"},
         CommandLineArgument{"rare",              "store",     {"0.05"},   1,    "Rare frequency threshold"},
         CommandLineArgument{"minlod",            "store",     {"3.0"},    1,    "Minimum IBDLOD"},
         CommandLineArgument{"minlength",         "store",     {"1.0"},    1,    "Miniumum segment length (Mb)"},
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
     cout << endl;
 
     VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0), 
-                      true, 
+                      !(args["keep_monomorphic"][0].compare("YES") == 0), 
                       empirical_freqs, 
                       args["vcf_freq"][0]};
     Dataset data;
