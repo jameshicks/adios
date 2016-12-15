@@ -78,12 +78,11 @@ int main(int argc, char** argv) {
     cout << "Genotype error rate: " << params.err_rate << '\n';
     cout << endl;
 
+    VCFParams vcfp = {false, true, empirical_freqs, args["vcf_freq"][0]};
     Dataset data;
     try {
-        // Look, if you have your allele frequencies in an INFO field called 
-        // "__ADIOSEMPIRICALFREQS", that's on you, not me. 
-        std::string freq_field = empirical_freqs ? "__ADIOSEMPIRICALFREQS" : args["vcf_freq"][0];
-        data = read_vcf(args["vcf"][0], freq_field);
+            
+        data = read_vcf(args["vcf"][0], vcfp);
     } catch (const std::invalid_argument& e) {
         std::cerr << "Could not open file: " << args["vcf"][0] << std::endl;
         return 1;

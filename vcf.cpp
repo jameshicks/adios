@@ -183,11 +183,10 @@ bool VCFRecord::is_snv(void) const {
     return true;
 }
 
-Dataset read_vcf(const std::string & filename, const std::string & freq_field) {
+Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
     using stringops::split;
     using std::vector;
 
-    bool use_empirical_freqs = (freq_field.compare("__ADIOSEMPIRICALFREQS") == 0);
 
     Dataset data;
     std::ifstream vcffile(filename);
@@ -251,17 +250,20 @@ Dataset read_vcf(const std::string & filename, const std::string & freq_field) {
 
         rec.get_minor_alleles(con);
 
-        // if (con.monomorphic()) {
-        //     data.chromosomes[chromidx]->exclusions["monomorphic"]++;
-        //     continue;
-        // }
+        if (fileparams.drop_monomorphs && con.monomorphic()) {
+            data.chromosomes[chromidx]->exclusions["Monomorphic"]++;
+            continue;
+        }
 
-        // if (con.singleton()) {
-        //     data.chromosomes[chromidx]->exclusions["Singleton"]++;
-        //     continue;
-        // }
+        if (fileparams.drop_singletons && con.singleton()) {
+            data.chromosomes[chromidx]->exclusions["Singleton"]++;
+            continue;
+        }
 
-        double fq = use_empirical_freqs ? con.allele_frequency() : rec.get_info_freq(freq_field);
+        double fq = fileparams.empirical_freqs ?
+                    con.allele_frequency() :
+                    rec.get_info_freq(fileparams.freq_field);
+
         data.chromosomes[chromidx]->add_variant(rec.label, rec.pos, fq);
 
 

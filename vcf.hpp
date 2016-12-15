@@ -31,6 +31,13 @@ struct VCFRecordGenotypeContainer {
 
 };
 
+struct VCFParams {
+    bool drop_singletons;
+    bool drop_monomorphs;
+    bool empirical_freqs;
+    std::string freq_field;
+};
+
 class VCFRecord {
 public:
     std::string chrom;
@@ -53,5 +60,5 @@ public:
 
 
 
-Dataset read_vcf(const std::string& filename, const std::string& freq_field);
+Dataset read_vcf(const std::string& filename, const VCFParams& fileparams);
 #endif

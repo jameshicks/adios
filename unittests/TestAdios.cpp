@@ -9,7 +9,9 @@
 TEST_GROUP(adios) {};
 
 TEST(adios, InformativeSites) {
-    Dataset d = read_vcf("unittests/test_informative_sites.vcf", "AF");
+    VCFParams vcfp = {false, false, false, "AF"};
+
+    Dataset d = read_vcf("unittests/test_informative_sites.vcf", vcfp);
     auto ind1 = d.individuals["DUMMY_A"];
     auto ind2 = d.individuals["DUMMY_B"];
 

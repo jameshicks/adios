@@ -6,7 +6,9 @@
 TEST_GROUP(DataModel) {};
 
 TEST(DataModel, GenotypeMethods) {
-    Dataset d = read_vcf("unittests/test2.vcf", "AF");
+    VCFParams vcfp = {false, false, false, "AF"};
+
+    Dataset d = read_vcf("unittests/test2.vcf", vcfp);
 
     std::vector<int> expected_mac{0,1,0,2,1};
     auto observed_mac = d.individuals["A"]->chromosomes[0]->dosages();
