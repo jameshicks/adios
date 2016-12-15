@@ -331,7 +331,7 @@ Segment::Segment(Indptr a,
     chrom = c;
 
     start = run.start;
-    stop = run.stop;
+    stop = run.stop - 1; // Segments are end-inclusive for convenience.
     state = run.value;
 
     trim(obs); // Trim back to the first shared_rvs
