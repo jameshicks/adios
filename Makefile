@@ -1,6 +1,6 @@
 EXEC = adios
 # add -Wc++98-compat-pedantic to warn on c++11 features
-CXXFLAGS = -std=c++11 -Wall -pedantic-errors -Wunreachable-code -O0 -g -Wno-unused-parameter -Wunused-function -Wextra
+CXXFLAGS = -std=c++11 -Wall -pedantic-errors -Wunreachable-code -O2 -g -Wno-unused-parameter -Wunused-function -Wextra
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 LDFLAGS = -lm
