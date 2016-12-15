@@ -20,4 +20,8 @@ TEST(UtilityFunctions, ValueRuns) {
     v = {1, 8, 2};
     CHECK(v == observed[0]);
 
+
+    std::vector<int> exp_runtoend = {0,0,0,2,2,2,2,2};
+    observed = runs_gte(exp_runtoend, 1);
+    v ={3,8,2};
 }
