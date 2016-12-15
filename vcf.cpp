@@ -292,13 +292,10 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
             inds[i]->set_allele(chromidx, markidx, 0, -1);
         }
 
-        // std::cout << "minor alleles at : ";
-        // for (auto m : con.alts) { std::cout << m << ", "; } std::cout << '\n';
 
         for (size_t i = 0; i < con.alts.size(); ++i) {
             std::div_t divres = std::div(con.alts[i], 2);
             auto ind = inds[divres.quot];
-            // std::cout << "setting allele: " << divres.quot << ',' << divres.rem << '\n';
             ind->set_allele(chromidx, markidx, divres.rem, 1);
         }
 
