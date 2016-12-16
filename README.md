@@ -34,6 +34,7 @@ No external libraries are required. Running `make test` will run unit tests on m
 5. END: Segment stop (bp)
 6. LENGTH: Segment length (with unit)
 7. STATE: IBD state (1 or 2)
-8. NMARK: Number of markers used to declare IBD
-9. NERR: Number of opposite homozygotes in segment
-9. LOD: log10(L(segment|IBD=STATE) / L(segment|IBD=0)) 
+8. NMARK: Number of informative markers in IBD segment
+9. NRARE: Number of rare variants shared by both individuals 
+10. NERR: Number of opposite homozygotes in segment
+11. LOD: log10(L(segment|IBD=STATE) / L(segment|IBD=0)) 
