@@ -34,9 +34,9 @@ struct adios_parameters {
     double rare_thresh;                             // Rare variant frequency threshold 
     double err_rate_common;                         // Pairwise genotype error rate for common variants
     double err_rate_rare;                           // Pairwise genotype error rate for rare variants
-    Matrix allele_error_mat_common;                 // Matrix of genotyping error probabilities for common variants
-    Matrix allele_error_mat_rare;                   // Matrix of genotyping error probabilities for rare variants
-    Matrix transition_mat;                          // HMM transition matrix
+    Matrix unphased_error_mat_common;               // Matrix of genotyping error probabilities for common variants
+    Matrix unphased_error_mat_rare;                 // Matrix of genotyping error probabilities for rare variants
+    Matrix unphased_transition_mat;                 // HMM transition matrix
     std::vector<std::vector<int>> rare_sites;       // The set of sites with rare variation
     int gamma_;                                     // Probability to enter IBD (10^(-gamma))
     int rho;                                        // Probability of exitiing IBD (10^(-rho))
@@ -94,14 +94,14 @@ adios_parameters params_from_args(std::map<std::string, std::vector<std::string>
 inline bool is_shared_rv(int obs) { return ((obs >= 4) && (obs != 6)); }
 
 // Creates the transition matrix for the HMM 
-Matrix transition_matrix(unsigned int l10gamma, unsigned int l10rho);
+Matrix unphased_transition_matrix(unsigned int l10gamma, unsigned int l10rho);
 
 // A matrix describing the probability of a having a genotype
 // given the observed genotype using an allele miscall error rate (eps)
-Matrix genotype_error_matrix(double eps);
+Matrix unphased_genotype_error_matrix(double eps);
 
 // Creates the HMM emission matrix for a genotype with minor allele frequency q
-Matrix emission_matrix(double q);
+Matrix unphased_emission_matrix(double q);
 
 // ADIOS works on a subset of markers. This function translates
 // the indices of the markers used back to the full indices.
@@ -109,19 +109,19 @@ AlleleSites update_indices(const AlleleSites& inp,
                            const std::map<int, int>& translator);
 
 // For two individuals, find a set of informative sites
-adios_sites find_informative_sites(const Indptr& ind1,
-                                   const Indptr& ind2,
-                                   int chromidx,
-                                   const AlleleSites& rares);
+adios_sites find_informative_sites_unphased(const Indptr& ind1,
+                                            const Indptr& ind2,
+                                            int chromidx,
+                                            const AlleleSites& rares);
 
  
 // Perform adios on the entire dataset d using parameters `params`
 void adios(Dataset& d, const adios_parameters& params);
 
 // Perform adios on a pair of individuals on one chromosome
-void adios_pair(const Indptr_pair& pair,
-                int chromidx,
-                const adios_parameters& params);
+void adios_pair_unphased(const Indptr_pair& pair,
+                         int chromidx,
+                         const adios_parameters& params);
 };
 
 #endif

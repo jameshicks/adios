@@ -21,7 +21,7 @@ TEST(adios, InformativeSites) {
         if (d.chromosomes[0]->frequencies[i] < 0.05) { rares.push_back(i); }
     }
 
-    auto p = adios::find_informative_sites(ind1, ind2, 0, rares);
+    auto p = adios::find_informative_sites_unphased(ind1, ind2, 0, rares);
     // std::vector<int> expected_sites = {2, 6, 11, 13, 14, 15, 16, 17};
     std::vector<int> expected_sites = {2,6,10, 11, 12, 13, 14, 15, 16, 17};
     auto observed_sites = p.second;
@@ -39,11 +39,11 @@ TEST(adios, InformativeSites) {
 //         {1e-2,       9.8999e-01, 1e-05},
 //         {1e-4,       1e-2,       9.899e-01}
 //     };
-//     Matrix observed = adios::transition_matrix(10);
+//     Matrix observed = adios::unphased_transition_matrix(10);
 //     CHECK((expected - observed).sum() < 1e-6);
 // }
 
-TEST(adios, EmissionMatrix) {
+TEST(adios, UnphasedEmissionMatrix) {
     Matrix expected = Matrix( {
         {  9.96005996e-01,   9.97002999e-01,   9.98001000e-01},
         {  9.97002999e-04,   9.98001000e-04,   0.00000000e+00},
@@ -55,7 +55,7 @@ TEST(adios, EmissionMatrix) {
         {  9.99000000e-10,   9.99000000e-07,   0.00000000e+00},
         {  1.00000000e-12,   1.00000000e-09,   1.00000000e-06}
     });
-    Matrix observed = adios::emission_matrix(0.001);
+    Matrix observed = adios::unphased_emission_matrix(0.001);
     CHECK((expected - observed).sum() < 1e-6);
 
 }
@@ -66,6 +66,6 @@ TEST(adios, GenotypeErrorMatrix) {
         {  9.99000000e-04,   9.98002000e-01,   9.99000000e-04},
         {  1.00000000e-06,   1.99800000e-03,   9.98001000e-01}
     };
-    Matrix observed = adios::genotype_error_matrix(0.001);
+    Matrix observed = adios::unphased_genotype_error_matrix(0.001);
     CHECK((expected - observed).sum() < 1e-6);
 }

@@ -2,7 +2,7 @@
 
 namespace adios
 {
-Matrix transition_matrix(int l10gamma, int l10rho)
+Matrix unphased_transition_matrix(int l10gamma, int l10rho)
 {
     const double gamma = pow(10, -l10gamma);
     const double rho   = pow(10, -l10rho);
@@ -17,7 +17,7 @@ Matrix transition_matrix(int l10gamma, int l10rho)
     return t;
 }
 
-Matrix genotype_error_matrix(double eps)
+Matrix unphased_genotype_error_matrix(double eps)
 {
     const double eta = 1 - eps;
 
@@ -34,7 +34,7 @@ Matrix genotype_error_matrix(double eps)
     return outp;
 }
 
-Matrix emission_matrix(double q)
+Matrix unphased_emission_matrix(double q)
 {
     Matrix mat(9, 3);
 
@@ -72,17 +72,17 @@ adios_parameters params_from_args(std::map<std::string, std::vector<std::string>
     // The error matrix we store is the genotype error matrix for an individual pair
     params.err_rate_common = stod(args["err"][0]);
     params.err_rate_rare = stod(args["err"][1]);
-    Matrix single_errorc = genotype_error_matrix(params.err_rate_common);
+    Matrix single_errorc = unphased_genotype_error_matrix(params.err_rate_common);
     Matrix pair_errorc = Linalg::kronecker_product(single_errorc, single_errorc);
-    params.allele_error_mat_common = pair_errorc;
+    params.unphased_error_mat_common = pair_errorc;
 
-    Matrix single_errorr = genotype_error_matrix(params.err_rate_rare);
+    Matrix single_errorr = unphased_genotype_error_matrix(params.err_rate_rare);
     Matrix pair_errorr = Linalg::kronecker_product(single_errorr, single_errorr);
-    params.allele_error_mat_rare = pair_errorr;
+    params.unphased_error_mat_rare = pair_errorr;
 
     params.gamma_ = stoul(args["transition"][0]);
     params.rho  =   stoul(args["transition"][1]);
-    params.transition_mat = transition_matrix(params.gamma_, params.rho);
+    params.unphased_transition_mat = unphased_transition_matrix(params.gamma_, params.rho);
 
     params.rare_thresh = stod(args["rare"][0]);
     params.min_length = stoi(args["minlength"][0]) * 1e6;
@@ -115,16 +115,16 @@ void adios_parameters::calculate_emission_mats(const Dataset& data) {
         }
     }
     for (auto fq : fqs) {
-        Matrix& err = fq < rare_thresh ? allele_error_mat_rare : allele_error_mat_rare;
-        Matrix m = Linalg::matrix_product(err, emission_matrix(fq));
+        Matrix& err = fq < rare_thresh ? unphased_error_mat_rare : unphased_error_mat_rare;
+        Matrix m = Linalg::matrix_product(err, unphased_emission_matrix(fq));
         emission_mats[fq] = m;
     }
 }
 
-adios_sites find_informative_sites(const Indptr& ind1,
-                                   const Indptr& ind2,
-                                   const int chromidx,
-                                   const std::vector<int>& rares)
+adios_sites find_informative_sites_unphased(const Indptr& ind1,
+                                            const Indptr& ind2,
+                                            const int chromidx,
+                                            const std::vector<int>& rares)
 {
 
     using namespace setops;
@@ -262,14 +262,14 @@ void adios(Dataset& d, const adios_parameters& params)
         for (size_t pairidx = 0; pairidx < pairs.size(); ++pairidx) {
             Indptr_pair pair = pairs[pairidx];
 
-            adios_pair(pair, chridx, params);
+            adios_pair_unphased(pair, chridx, params);
 
         }
     }
 }
 
 
-void adios_pair(const Indptr_pair& inds,
+void adios_pair_unphased(const Indptr_pair& inds,
                 int chromidx,
                 const adios_parameters& params)
 {
@@ -280,10 +280,10 @@ void adios_pair(const Indptr_pair& inds,
 
     auto chromobj = ind1->chromosomes[chromidx]->info;
 
-    auto useful = find_informative_sites(ind1,
-                                         ind2,
-                                         chromidx,
-                                         params.rare_sites[chromidx]);
+    auto useful = find_informative_sites_unphased(ind1,
+                                                  ind2,
+                                                  chromidx,
+                                                  params.rare_sites[chromidx]);
 
     auto observations = useful.first;
     std::vector<int> informative_sites(useful.second.begin(), useful.second.end());
@@ -304,7 +304,7 @@ void adios_pair(const Indptr_pair& inds,
         emissions.push_back(emiss);
     }
 
-    GenotypeHMM model(observations, emissions, params.transition_mat);
+    GenotypeHMM model(observations, emissions, params.unphased_transition_mat);
     std::vector<int> hidden_states = model.decode(false);
 
     std::vector<ValueRun> runs = runs_gte_classic(hidden_states, 1, 5);
@@ -379,12 +379,12 @@ double Segment::calculate_lod(std::vector<int>& observations,
     using std::log10;
     if (start >= stop) { return -1e99; }
     // Transition probs for entering and exiting a state
-    double entry = params.transition_mat.get(0, state);
-    double exit = params.transition_mat.get(state, 0);
+    double entry = params.unphased_transition_mat.get(0, state);
+    double exit = params.unphased_transition_mat.get(state, 0);
 
     // Transition probs for remaining in a state
-    double remain_state = params.transition_mat.get(state, state);
-    double remain_null = params.transition_mat.get(0, 0);
+    double remain_state = params.unphased_transition_mat.get(state, state);
+    double remain_null = params.unphased_transition_mat.get(0, 0);
     double log_ibd_prob = log10(remain_state) * (nmark - 1);
     double log_null_prob = log10(remain_null) * (nmark - 1);
 
