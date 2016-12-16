@@ -15,7 +15,7 @@ Segments are returned with a LOD-score style quality metric to quantify the conf
 + `--freq_floor`: Minimum frequency used in calculations
 + `--rare`: Alleles below this frequency are included as rare alleles.
 + `--minlength`: Minimum segment length to report (in megabases)
-+ `--minmark`: Minimum number of markers to declare IBD
++ `--minmark`: Minimum number of shared rare variants to declare IBD
 + `--minlod`: Minimum segment LOD to declare IBD
 + `--err`: Genotype error rate.
 + `--transition`: Transition cost to enter and leave IBD states. (Two integers required, larger numbers correspond to higher cost)

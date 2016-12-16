@@ -404,7 +404,7 @@ double Segment::calculate_lod(std::vector<int>& observations,
 bool Segment::passes_filters(const adios::adios_parameters& params) const
 {
     return ((length() >= params.min_length) &&
-            (nmark >= params.min_mark) &&
+            (nrare >= params.min_mark) &&
             (lod >= params.min_lod));
 
 }
