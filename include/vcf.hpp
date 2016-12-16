@@ -19,6 +19,7 @@
 #include "common.hpp"
 #include "stringops.hpp"
 #include "datamodel.hpp"
+#include "FileIOManager.hpp"
 
 struct VCFRecordGenotypeContainer {
     size_t ninds; 

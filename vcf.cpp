@@ -139,7 +139,6 @@ void VCFRecord::get_minor_alleles(VCFRecordGenotypeContainer& con) const {
         if (format[i] == ':') gtidx++;
     }
 
-    // std::cout << "gtidx is " << gtidx << std::endl;
     char* original_data_pointer = strdup(data.c_str());
     char* cdata = original_data_pointer;
     int indidx = -1;
@@ -205,13 +204,12 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
 
 
     Dataset data;
-    std::ifstream vcffile(filename);
-
-    if (!vcffile) { throw std::invalid_argument("Unable to open file"); }
+    FileReader vcffile(filename);
 
     std::vector<std::string> indlabs;
     std::string line;
-    while (getline(vcffile, line)) {
+    while (vcffile.good()) {
+        line = vcffile.getline();
         if (stringops::startswith(line, "##")) {
             continue;
         } else if (stringops::startswith(line, "#")) {
@@ -236,8 +234,9 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
     int chromidx = -1;
     int markidx = 0;
     unsigned long rawidx = 0;
-    while (getline(vcffile, line)) {
-        // if (rawidx % 10000 == 0) { std::cout << "Line " << rawidx << std::endl;}
+    while (vcffile.good()) {
+        line = vcffile.getline();
+
         if (!line.length()) continue;
         VCFRecord rec(line);
         con.clear();
