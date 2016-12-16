@@ -39,7 +39,7 @@ TEST(VCF, VCFEmpiricalFrequency) {
 
     CHECK_EQUAL("20", d.chromosomes[1]->label);
     CHECK_EQUAL(5, d.chromosomes[1]->nmark());
-    expected_freqs = {3/6.0, 1/6.0, 0, 4/6.0, 1.0};
+    expected_freqs = {3/6.0, 1/6.0, 0, 1-(4/6.0), 0};
     observed_freqs = d.chromosomes[1]->frequencies;
     CHECK(expected_freqs == observed_freqs);
 
