@@ -21,12 +21,18 @@
 #include "datamodel.hpp"
 #include "FileIOManager.hpp"
 
+
+// Receives variant calls from VCFRecord
 struct VCFRecordGenotypeContainer {
     size_t ninds; 
     std::vector<size_t> missing;
     std::vector<size_t> alts;
     VCFRecordGenotypeContainer(size_t n);
+
+    // Set minor alleles to major and vice-versa. Ignores missing sites.
     void invert(void);
+
+    // Calculates frequency of minor allele (missings excluded)
     double allele_frequency(void) const;
     inline bool monomorphic(void) const { return alts.size() == 0; }
     inline bool singleton(void) const { return alts.size() == 1; }
@@ -38,7 +44,12 @@ struct VCFRecordGenotypeContainer {
 struct VCFParams {
     bool drop_singletons;
     bool drop_monomorphs;
+
+    // Calculate allele frequencies from data?
     bool empirical_freqs;
+
+    // VCF Info field to retrieve frequency from if not 
+    // calculating empirical frequencies.
     std::string freq_field;
 };
 
@@ -57,6 +68,8 @@ public:
     std::map<std::string, std::string> infomap(void) const;
     std::string get_info_by_key(const char* key);
     void get_minor_alleles(VCFRecordGenotypeContainer& container) const;
+    
+    // Returns the frequency specified from an INFO field, otherwise 0.0;
     double get_info_freq(const std::string& info_field);
     inline int nalleles(void) const;
     inline bool is_snv(void) const;

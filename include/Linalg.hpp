@@ -32,13 +32,12 @@ struct Vectorlike {
   inline void inplace_mul(const double v) { for (size_t i=0; i < size; ++i) set(i, get(i) * v); }
   inline void inplace_div(const double v) { for (size_t i=0; i < size; ++i) set(i, get(i) / v); }
   inline void boundscheck(size_t i) const { if (i >= size) throw std::invalid_argument("index oor"); }
-  // inline void boundscheck(size_t i) const {return;}
+
   size_t argmax(void) const;
   size_t argmin(void) const;
   double max(void) const;
   double min(void) const;
   void print(void) const;
-  // friend Vector column_vec_matrix_prod(const Vectorlike& v, const Matrix& b);
   
 };
 
@@ -52,7 +51,6 @@ struct VectorView : public Vectorlike {
   inline double get(size_t idx) const { return data[idx*stride]; }
   inline void set(size_t idx, double v) { data[idx*stride] = v; }
   inline double operator[](size_t idx) { return data[idx*stride]; }
-  // inline const double operator[](size_t idx) const { return data[idx*stride]; }
   
   inline double* begin(void) { return data; }
   inline double* end(void) { return data+size; }

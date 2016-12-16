@@ -77,11 +77,18 @@ public:
             std::vector<int>& obs, std::vector<Matrix>& emissions,
             std::vector<int>& adiossites, const adios_parameters& params);
 
+    // Trim segment back to last shared rare variant
     void trim(std::vector<int>& observations);
+
+    // Calculate the lod score
     double calculate_lod(std::vector<int>& observations,
                          std::vector<Matrix>& emissions,
                          const adios::adios_parameters& params) const;
+    
+    // Does this segment pass the filters we set?
     bool passes_filters(const adios::adios_parameters& params) const;
+    
+    // Output line
     std::string record_string(void) const;
 
 };

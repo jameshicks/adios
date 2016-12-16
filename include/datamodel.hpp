@@ -87,11 +87,18 @@ class Dataset
 public:
     std::map<std::string, shared_ptr<Individual>> individuals;
     std::vector<shared_ptr<ChromInfo>> chromosomes;
+    
+    // Number of individuals
     size_t ninds(void) const;
+
+    // Number of chromosomes
     size_t nchrom(void) const;
+
+    // Number of retained markers 
     size_t nmark(void) const;
+
+    // Number of excluded markers
     size_t nexcluded(void) const;
-    // int ngeno(void);
     shared_ptr<Individual> add_individual(const std::string& label);
     shared_ptr<ChromInfo> add_chromosome(const std::string& label);
     void round_frequencies(unsigned int places);
