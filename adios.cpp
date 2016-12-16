@@ -376,7 +376,7 @@ double Segment::calculate_lod(std::vector<int>& observations,
                               std::vector<Matrix>& emissions,
                               const adios::adios_parameters& params) const
 {
-    using std::log;
+    using std::log10;
     if (start >= stop) { return -1e99; }
     // Transition probs for entering and exiting a state
     double entry = params.transition_mat.get(0, state);
@@ -385,17 +385,17 @@ double Segment::calculate_lod(std::vector<int>& observations,
     // Transition probs for remaining in a state
     double remain_state = params.transition_mat.get(state, state);
     double remain_null = params.transition_mat.get(0, 0);
-    double log_ibd_prob = log(remain_state) * (nmark - 1);
-    double log_null_prob = log(remain_null) * (nmark - 1);
+    double log_ibd_prob = log10(remain_state) * (nmark - 1);
+    double log_null_prob = log10(remain_null) * (nmark - 1);
 
     for (size_t i = start; i < stop; ++i) {
         int obs = observations[i];
-        log_ibd_prob += log(emissions[i].get(obs, state));
-        log_null_prob += log(emissions[i].get(obs, 0));
+        log_ibd_prob += log10(emissions[i].get(obs, state));
+        log_null_prob += log10(emissions[i].get(obs, 0));
     }
 
-    log_ibd_prob += log(entry) + log(exit);
-    log_null_prob += 2 * log(remain_state);
+    log_ibd_prob += log10(entry) + log10(exit);
+    log_null_prob += 2 * log10(remain_state);
 
     return log_ibd_prob - log_null_prob;
 }
