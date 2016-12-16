@@ -100,7 +100,6 @@ struct Vector : public Vectorlike {
 };
 
 
-struct coord { size_t i; size_t j; };
 
 double dot_product(const Vectorlike& u, const Vectorlike& v);
 
@@ -145,7 +144,6 @@ class Matrix {
   Matrix& operator=(const Matrix& v);
   Matrix& operator=(Matrix&& v);
   
-  inline double operator[](const coord& c) { return data[translate_index(c.i, c.j)]; }
   bool operator==(const Matrix& other);
   bool operator!=(const Matrix& other);
   
