@@ -90,6 +90,7 @@ public:
     size_t ninds(void) const;
     size_t nchrom(void) const;
     size_t nmark(void) const;
+    size_t nexcluded(void) const;
     // int ngeno(void);
     shared_ptr<Individual> add_individual(const std::string& label);
     shared_ptr<ChromInfo> add_chromosome(const std::string& label);

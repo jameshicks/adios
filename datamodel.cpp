@@ -118,6 +118,17 @@ size_t Dataset::nmark(void) const {
     return tot;
 }
 
+size_t Dataset::nexcluded(void) const {
+    size_t tot = 0;
+    for (size_t i = 0; i < nchrom(); ++i) {
+        auto c = chromosomes[i];
+        for (auto kv : c->exclusions) {
+            tot += kv.second;
+        }
+    }
+    return tot;
+}
+
 shared_ptr<Individual> Dataset::add_individual(const std::string& lab) {
     shared_ptr<Individual> ind(new Individual(lab));
     individuals[lab] = ind;

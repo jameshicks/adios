@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include <chrono>
 #include "vcf.hpp"
 #include "adios.hpp"
 #include "ArgumentParser.hpp"
@@ -85,6 +86,9 @@ int main(int argc, char** argv) {
                       !(args["keep_monomorphic"][0].compare("YES") == 0), 
                       empirical_freqs, 
                       args["vcf_freq"][0]};
+
+
+    auto start = std::chrono::steady_clock::now();
     Dataset data;
     try {   
         data = read_vcf(args["vcf"][0], vcfp);
@@ -101,6 +105,13 @@ int main(int argc, char** argv) {
     }
 
     data.floor_frequencies(std::stod(args["freq_floor"][0]));
+    auto end = std::chrono::steady_clock::now();
+    double elapsedSeconds = ((end - start).count()) * std::chrono::steady_clock::period::num / static_cast<double>(std::chrono::steady_clock::period::den);
+    
+    size_t nmark_total = data.nmark() + data.nexcluded();
+    std::cout << "Processed " << nmark_total << " variants ";
+    std::cout << "in " << elapsedSeconds << "s "; 
+    std::cout << "(" << (nmark_total / elapsedSeconds) << " variants/sec)\n\n";
 
     std::cout << data.ninds() << " individuals" << std::endl;
     for (size_t chridx = 0; chridx < data.nchrom(); ++chridx) {
