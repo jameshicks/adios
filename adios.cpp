@@ -250,7 +250,7 @@ void adios(Dataset& d, const adios_parameters& params)
     std::vector<Indptr> inds;
     for (auto pr = d.individuals.begin(); pr != d.individuals.end(); ++pr) { inds.push_back(pr->second);}
 
-    std::cout << "IND_1\tIND_2\tCHROM\tSTART\tEND\tLENGTH\tSTATE\tNMARK\tLOD\n";
+    std::cout << "IND_1\tIND_2\tCHROM\tSTART\tEND\tLENGTH\tSTATE\tNMARK\tNERR\tLOD\n";
     std::vector<Indptr_pair> pairs = combinatorics::pair_combinations(inds);
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
         for (size_t pairidx = 0; pairidx < pairs.size(); ++pairidx) {
@@ -340,6 +340,11 @@ Segment::Segment(Indptr a,
 
     lod = calculate_lod(obs, emissions, params);
 
+    nerr = 0;
+    for (size_t i = start; i<=stop; ++i) {
+        nerr += (int)(obs[i] == 2 || obs[i] == 6); 
+    }
+
 }
 
 
@@ -407,6 +412,7 @@ std::string Segment::record_string(void) const
     s << bp_formatter(length()) << '\t';
     s << state << '\t';
     s << nmark << '\t';
+    s << nerr << '\t';
     s << sfloat(lod, 2);
 
     return s.str();

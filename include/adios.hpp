@@ -62,6 +62,7 @@ public:
     int state;
 
     size_t nmark;
+    size_t nerr;
     double lod;
 
 
