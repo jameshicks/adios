@@ -32,8 +32,10 @@ using std::pair;
 // Parameters for ADIOS.
 struct adios_parameters {
     double rare_thresh;                             // Rare variant frequency threshold 
-    double err_rate;                                // Allele error rate
-    Matrix allele_error_mat;                        // Matrix of genotyping error probabilities
+    double err_rate_common;                         // Pairwise genotype error rate for common variants
+    double err_rate_rare;                           // Pairwise genotype error rate for rare variants
+    Matrix allele_error_mat_common;                 // Matrix of genotyping error probabilities for common variants
+    Matrix allele_error_mat_rare;                   // Matrix of genotyping error probabilities for rare variants
     Matrix transition_mat;                          // HMM transition matrix
     std::vector<std::vector<int>> rare_sites;       // The set of sites with rare variation
     int gamma_;                                     // Probability to enter IBD (10^(-gamma))

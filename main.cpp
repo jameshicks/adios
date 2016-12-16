@@ -24,21 +24,21 @@ int main(int argc, char** argv) {
 
     ArgumentParser parser;
     std::vector<CommandLineArgument> arginfo = {
-        //                  Argument           Action       Default     narg  help string
-        CommandLineArgument{"vcf",               "store",     {""},       1,    "VCF input file"},
-        CommandLineArgument{"vcf_freq",          "store",     {"AF"},     1,    "VCF INFO field containing allele frequency"},
-        CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},     0,    "Calculate allele frequencies from data"},
-        CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},     0,    "Include singleton variants from dataset"},
-        CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},     0,    "Include monomorphic positions in dataset"},
-        CommandLineArgument{"rare",              "store",     {"0.05"},   1,    "Rare frequency threshold"},
-        CommandLineArgument{"freq_floor",        "store",     {"0.001"},  1,    "Variants with frequencies below this are set to this"},
-        CommandLineArgument{"minlod",            "store",     {"3.0"},    1,    "Minimum IBDLOD"},
-        CommandLineArgument{"minlength",         "store",     {"1.0"},    1,    "Miniumum segment length (Mb)"},
-        CommandLineArgument{"minmark",           "store",     {"16"},     1,    "Minimum number of markers to establish IBD"},
-        CommandLineArgument{"err",               "store",     {"0.001"},  1,    "Allele error rate"},
-        CommandLineArgument{"transition",        "store",     {"5", "3"}, 2,    "Transition IBD penalty (10^(-x))"},
-        CommandLineArgument{"help",              "store_yes", {"NO"},     0,    "Display this help message"   },
-        CommandLineArgument{"version",           "store_yes", {"NO"},     0,    "Print version information"   }
+        //                  Argument           Action       Default               narg  help string
+        CommandLineArgument{"vcf",               "store",     {""},               1,    "VCF input file"},
+        CommandLineArgument{"vcf_freq",          "store",     {"AF"},             1,    "VCF INFO field containing allele frequency"},
+        CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},             0,    "Calculate allele frequencies from data"},
+        CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},             0,    "Include singleton variants from dataset"},
+        CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},             0,    "Include monomorphic positions in dataset"},
+        CommandLineArgument{"rare",              "store",     {"0.05"},           1,    "Rare frequency threshold"},
+        CommandLineArgument{"freq_floor",        "store",     {"0.001"},          1,    "Variants with frequencies below this are set to this"},
+        CommandLineArgument{"minlod",            "store",     {"3.0"},            1,    "Minimum IBDLOD"},
+        CommandLineArgument{"minlength",         "store",     {"1.0"},            1,    "Miniumum segment length (Mb)"},
+        CommandLineArgument{"minmark",           "store",     {"16"},             1,    "Minimum number of markers to establish IBD"},
+        CommandLineArgument{"err",               "store",     {"0.001", "0.01"},  2,    "Allele error rate"},
+        CommandLineArgument{"transition",        "store",     {"5", "3"},         2,    "Transition IBD penalty (10^(-x))"},
+        CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
+        CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   }
     };
     for (auto argi : arginfo) { parser.add_argument(argi); }
 
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
     cout << "Minimum segment LOD: " << params.min_lod << '\n';
     cout << "Minimum segment length: " << bp_formatter(params.min_length) << '\n';
     cout << "Minimum markers to declare IBD: " << params.min_mark << '\n';
-    cout << "Genotype error rate: " << params.err_rate << '\n';
+    cout << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)"<< '\n';
     cout << endl;
 
     VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0), 

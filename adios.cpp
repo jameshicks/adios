@@ -70,10 +70,15 @@ adios_parameters params_from_args(std::map<std::string, std::vector<std::string>
     adios_parameters params;
 
     // The error matrix we store is the genotype error matrix for an individual pair
-    params.err_rate = stod(args["err"][0]);
-    Matrix single_error = genotype_error_matrix(params.err_rate);
-    Matrix pair_error = Linalg::kronecker_product(single_error, single_error);
-    params.allele_error_mat = pair_error;
+    params.err_rate_common = stod(args["err"][0]);
+    params.err_rate_rare = stod(args["err"][1]);
+    Matrix single_errorc = genotype_error_matrix(params.err_rate_common);
+    Matrix pair_errorc = Linalg::kronecker_product(single_errorc, single_errorc);
+    params.allele_error_mat_common = pair_errorc;
+
+    Matrix single_errorr = genotype_error_matrix(params.err_rate_rare);
+    Matrix pair_errorr = Linalg::kronecker_product(single_errorr, single_errorr);
+    params.allele_error_mat_rare = pair_errorr;
 
     params.gamma_ = stoul(args["transition"][0]);
     params.rho  =   stoul(args["transition"][1]);
@@ -110,7 +115,8 @@ void adios_parameters::calculate_emission_mats(const Dataset& data) {
         }
     }
     for (auto fq : fqs) {
-        Matrix m = Linalg::matrix_product(allele_error_mat, emission_matrix(fq));
+        Matrix& err = fq < rare_thresh ? allele_error_mat_rare : allele_error_mat_rare;
+        Matrix m = Linalg::matrix_product(err, emission_matrix(fq));
         emission_mats[fq] = m;
     }
 }
