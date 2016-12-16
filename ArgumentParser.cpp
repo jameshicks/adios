@@ -17,7 +17,7 @@ void ArgumentParser::update_args(std::vector<std::string> newargs) {
 
             if (a.action.compare("store") == 0) {
                 args[cur_flag] = {};
-            } else if (a.action.compare("store_true") == 0) {
+            } else if (a.action.compare("store_yes") == 0) {
                 args[cur_flag] = {"YES"};
             }
 
