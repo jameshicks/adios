@@ -31,10 +31,10 @@ $(UNITTEST_OBJECTS): %.o: %.cpp $(COMMON_OBJECTS)
 
 clean:
 	rm -rf $(EXEC) $(COMMON_OBJECTS) main.o
-	rm -rf unittests/adios_tester $(UNITTEST_OBJECTS) AllTests.o
+	rm -rf unittests/unittester $(UNITTEST_OBJECTS) AllTests.o
 
 unittest: $(COMMON_OBJECTS) $(UNITTEST_OBJECTS)
 	$(CXX) $(CPPU_CXXFLAGS) $(INCLUDES) -c unittests/AllTests.cpp -o AllTests.o
-	$(CXX) $(COMMON_OBJECTS) $(UNITTEST_OBJECTS) -o unittests/adios_tester $(CPPU_LDFLAGS)
-	./unittests/adios_tester -v
+	$(CXX) $(COMMON_OBJECTS) $(UNITTEST_OBJECTS) -o unittests/unittester $(CPPU_LDFLAGS)
+	./unittests/unittester -v
 

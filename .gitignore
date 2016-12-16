@@ -3,4 +3,5 @@
 support/*
 *.sublime*
 adios
+unittests/unittester
 
