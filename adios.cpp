@@ -267,8 +267,15 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
     
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
         
+        double signpost = 0.0; double signpost_step = 0.05; 
         for (size_t pairidx = 0; pairidx < pairs.size(); ++pairidx) {
             Indptr_pair pair = pairs[pairidx];
+
+            double progress = pairidx / (double)(pairs.size());
+            if (progress > signpost) {
+                if (!out.is_stdout()) std::cout << sfloat(progress * 100, 1) << '%' << "..." << std::endl;
+                while (progress > signpost) signpost += signpost_step;
+            }
 
             std::vector<Segment> segs = adios_pair_unphased(pair, chridx, params);  
             for (Segment s : segs) out.writetoks(s.record());
