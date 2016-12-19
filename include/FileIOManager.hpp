@@ -5,14 +5,20 @@
 
 #define READBUF_SIZE 10000
 
-class FileReader {
-private:
+class CFileWrapper {
+public:
     FILE* f;
     std::string filename;
-public:
+    ~CFileWrapper(void);    
+    void openfile(const std::string& filename, const std::string& mode);
+    void closefile(void);
     inline bool good(void) { return !(feof(f) || ferror(f)); }
     inline bool eof(void) { return feof(f); }
+};
+
+class FileReader : public CFileWrapper {
+public:
     FileReader(const std::string& fn);
-    ~FileReader(void);
     std::string getline(void);
 };
+
