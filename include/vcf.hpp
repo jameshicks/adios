@@ -16,7 +16,7 @@
 #include <algorithm>
 
 
-#include "common.hpp"
+#include "utility.hpp"
 #include "stringops.hpp"
 #include "datamodel.hpp"
 #include "FileIOManager.hpp"

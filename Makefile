@@ -2,7 +2,7 @@ EXEC = adios
 # add -Wc++98-compat-pedantic to warn on c++11 features
 CXXFLAGS = -std=c++11 -Wall -pedantic-errors -Wunreachable-code -O2 -g -Wno-unused-parameter -Wunused-function -Wextra
 INCLUDES = -Iinclude
-COMMON_SOURCES = ArgumentParser.cpp FileIOManager.cpp HiddenMarkov.cpp Linalg.cpp adios.cpp combinatorics.cpp common.cpp datamodel.cpp setops.cpp stringops.cpp vcf.cpp
+COMMON_SOURCES = ArgumentParser.cpp FileIOManager.cpp HiddenMarkov.cpp Linalg.cpp adios.cpp combinatorics.cpp utility.cpp datamodel.cpp setops.cpp stringops.cpp vcf.cpp
 COMMON_OBJECTS = $(COMMON_SOURCES:.cpp=.o)
 
 LDFLAGS = -lm

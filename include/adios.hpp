@@ -17,7 +17,7 @@
 #include "Linalg.hpp"
 #include "HiddenMarkov.hpp"
 #include "datamodel.hpp"
-#include "common.hpp"
+#include "utility.hpp"
 // using AlleleSites;
 
 namespace adios {

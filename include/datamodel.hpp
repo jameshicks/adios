@@ -11,7 +11,7 @@
 #include <iterator>
 #include <iostream>
 
-#include "common.hpp"
+#include "utility.hpp"
 #include "setops.hpp"
 
 using std::shared_ptr;
