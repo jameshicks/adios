@@ -89,6 +89,8 @@ adios_parameters params_from_args(std::map<std::string, std::vector<std::string>
     params.min_mark = stoi(args["minmark"][0]);
     params.min_lod = stod(args["minlod"][0]);
 
+    params.viterbi = (args["viterbi"][0].compare("YES") == 0);
+
     return params;
 
 }
@@ -299,7 +301,7 @@ void adios_pair_unphased(const Indptr_pair& inds,
     }
 
     GenotypeHMM model(observations, emissions, params.unphased_transition_mat);
-    std::vector<int> hidden_states = model.decode(false);
+    std::vector<int> hidden_states = model.decode(params.viterbi);
 
     std::vector<ValueRun> runs = runs_gte_classic(hidden_states, 1, 5);
 

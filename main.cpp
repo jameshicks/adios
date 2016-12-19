@@ -39,7 +39,8 @@ int main(int argc, char** argv) {
         CommandLineArgument{"err",               "store",     {"0.001", "0.01"},  2,    "Allele error rate"},
         CommandLineArgument{"transition",        "store",     {"5", "3"},         2,    "Transition IBD penalty (10^(-x))"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
-        CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   }
+        CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
+        CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"}
     };
     for (auto argi : arginfo) { parser.add_argument(argi); }
 
@@ -80,6 +81,7 @@ int main(int argc, char** argv) {
     cout << "Minimum segment length: " << bp_formatter(params.min_length) << '\n';
     cout << "Minimum markers to declare IBD: " << params.min_mark << '\n';
     cout << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)"<< '\n';
+    cout << "Decoding: " << (params.viterbi ? "MAP" : "ML") << '\n';
     cout << endl;
 
     VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0), 

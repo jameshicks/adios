@@ -46,6 +46,7 @@ struct adios_parameters {
     void get_rare_sites(Dataset& data);             // Get the rare sites
     void calculate_emission_mats(const Dataset& d); // Precompute emission matrices
     std::map<double, Matrix> emission_mats;         // Precomputed emission matrices indexed by frequency
+    bool viterbi;                                   // Use MAP decoding
 };
 
 
