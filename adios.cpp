@@ -307,6 +307,7 @@ std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
 
     // Make the emission matrices
     std::vector<Matrix> emissions;
+    emissions.reserve(nmark);
     for (int i = 0; i < nmark; ++i) {
         // Lookup the precomputed matrix
         Matrix emiss = params.emission_mats.at(chromobj->frequencies[i]);
