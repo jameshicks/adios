@@ -56,9 +56,12 @@ void ArgumentParser::print_help(void) const {
     using std::endl;
     using std::left;
 
+    std::cout.width(25); cout << std::left << "Flag";
+    std::cout.width(30); cout << "Description" << endl;
+    cout << endl;
     for (auto kv : arg_info) {
         CommandLineArgument cla = kv.second;
-        std::cout.width(15); std::cout << std::left << "--" + cla.label;
+        std::cout.width(25); std::cout << std::left << "--" + cla.label;
         std::cout.width(30); std::cout << cla.help << std::endl;
     }
     cout << endl;
