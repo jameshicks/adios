@@ -36,8 +36,8 @@ int main(int argc, char** argv) {
         CommandLineArgument{"minlod",            "store",     {"3.0"},            1,    "Minimum LOD to report a segment"},
         CommandLineArgument{"minlength",         "store",     {"1.0"},            1,    "Miniumum length to report a segment (Mb)"},
         CommandLineArgument{"minmark",           "store",     {"16"},             1,    "Minimum number of shared rare variants to report an IBD segment"},
-        CommandLineArgument{"err",               "store",     {"0.001", "0.01"},  2,    "Allele error rates (rare, common)"},
-        CommandLineArgument{"transition",        "store",     {"5", "3"},         2,    "IBD entrance/exit penalty (10^(-x))"},
+        CommandLineArgument{"err",               "store",     {"0.001", "0.005"}, 2,    "Allele error rates (rare, common)"},
+        CommandLineArgument{"transition",        "store",     {"6", "3"},         2,    "IBD entrance/exit penalty: P(Transition) = 10^(-x))"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
         CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
         CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"}
