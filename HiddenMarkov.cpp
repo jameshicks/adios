@@ -124,8 +124,8 @@ std::vector<int> GenotypeHMM::viterbi(void) const
 
     int best_final_state = log_probs.argmax();
     Linalg::Vector hidden_states = paths.get_row(best_final_state);
-    for (size_t i = 0; i < hidden_states.size; ++i) {
-        outp[i] = (int)hidden_states.get(i + 1);
+    for (size_t i = 1; i < hidden_states.size; ++i) {
+        outp[i-1] = (int)hidden_states.get(i);
     }
     return outp;
 }

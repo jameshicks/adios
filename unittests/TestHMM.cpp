@@ -48,7 +48,7 @@ TEST(HiddenMarkov, Viterbi)
     for (size_t i=0; i<o.size(); ++i) { ev.push_back(e); } 
 
     GenotypeHMM hmmfwbw = GenotypeHMM(o, ev, t);
-    auto pred_states = hmmfwbw.decode(false);
+    auto pred_states = hmmfwbw.decode(true);
 
     CHECK(o == pred_states);
 
