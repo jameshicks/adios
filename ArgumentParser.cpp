@@ -36,7 +36,7 @@ std::vector<std::string> ArgumentParser::validate_args(void) const {
     std::vector<std::string> errors;
     for (auto it = args.begin(); it != args.end(); ++it) {
         CommandLineArgument ai = arg_info.at(it->first);
-        if (it->second.empty()) {
+        if (it->second.front().empty()) {
             errors.push_back("Argument required: " + it->first);
         }
         if (ai.nargs && it->second.size() != ai.nargs) {
