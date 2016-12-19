@@ -290,17 +290,11 @@ void adios_pair_unphased(const Indptr_pair& inds,
     int nmark = informative_sites.size();
 
 
-    // Get the frequencies
-    std::vector<double> freqs(nmark);
-    for (int i = 0; i < nmark; ++i) {
-        freqs[i] = chromobj->frequencies[i];
-    }
-
     // Make the emission matrices
     std::vector<Matrix> emissions;
     for (int i = 0; i < nmark; ++i) {
         // Lookup the precomputed matrix
-        Matrix emiss = params.emission_mats.at(freqs[i]);
+        Matrix emiss = params.emission_mats.at(chromobj->frequencies[i]);
         emissions.push_back(emiss);
     }
 
