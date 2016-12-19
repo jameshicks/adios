@@ -253,25 +253,31 @@ AlleleSites update_indices(const AlleleSites& inp,
     return output;
 }
 
-void adios(Dataset& d, const adios_parameters& params)
+void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 {
     std::vector<Indptr> inds;
     for (auto pr = d.individuals.begin(); pr != d.individuals.end(); ++pr) { inds.push_back(pr->second);}
 
-    std::cout << "IND_1\tIND_2\tCHROM\tSTART\tEND\tLENGTH\tSTATE\tNMARK\tNRARE\tNERR\tLOD\n";
-    std::vector<Indptr_pair> pairs = combinatorics::pair_combinations(inds);
+        std::vector<std::string> header = {
+            "IND_1", "IND_2", "CHROM", "START", "END", "LENGTH",
+            "STATE", "NMARK", "NRARE", "NERR", "LOD"
+        };
+        out.writetoks(header);
+        std::vector<Indptr_pair> pairs = combinatorics::pair_combinations(inds);
+    
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
+        
         for (size_t pairidx = 0; pairidx < pairs.size(); ++pairidx) {
             Indptr_pair pair = pairs[pairidx];
 
-            adios_pair_unphased(pair, chridx, params);
-
+            std::vector<Segment> segs = adios_pair_unphased(pair, chridx, params);  
+            for (Segment s : segs) out.writetoks(s.record());
         }
     }
 }
 
 
-void adios_pair_unphased(const Indptr_pair& inds,
+std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
                 int chromidx,
                 const adios_parameters& params)
 {
@@ -305,16 +311,17 @@ void adios_pair_unphased(const Indptr_pair& inds,
 
     std::vector<ValueRun> runs = runs_gte_classic(hidden_states, 1, 5);
 
+    std::vector<Segment> goodsegs;
     for (ValueRun r : runs) {
         Segment seg(ind1, ind2, r, chromobj,
                     observations, emissions,
                     informative_sites, params);
 
         if (seg.passes_filters(params)) {
-            std::cout << seg.record_string() << '\n';
+            goodsegs.push_back(seg);
         }
     }
-
+    return goodsegs;
 }
 
 Segment::Segment(Indptr a,
@@ -405,8 +412,28 @@ bool Segment::passes_filters(const adios::adios_parameters& params) const
 
 }
 
+std::vector<std::string> Segment::record(void) const {
+        using std::to_string;
+
+    std::vector<std::string> s = {
+        ind1->label,
+        ind2->label,
+        chrom->label,
+        to_string(chrom->positions[full_start]),
+        to_string(chrom->positions[full_stop]),
+        bp_formatter(length()),
+        to_string(state),
+        to_string(nmark),
+        to_string(nrare),
+        to_string(nerr),
+        sfloat(lod, 2)
+    };
+    return s;
+}
+
 std::string Segment::record_string(void) const
 {
+
     std::stringstream s;
     s << ind1->label << '\t';
     s << ind2->label << '\t';

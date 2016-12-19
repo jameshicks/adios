@@ -9,6 +9,7 @@ Segments are returned with a LOD-score style quality metric to quantify the conf
 ## Options
 + `--vcf`: VCF input file
 + `--vcf_freq`: INFO field in vcf to use as allele frequency
++ `--out`: Write IBD information to file
 + `--keep_singletons`: Include singleton variants in dataset
 + `--keep_monomorphic`: Include monomorphic positions in dataset
 + `--empirical_freqs`: Calculate allele frequencies from data (supercedes `--vcf_freq`)

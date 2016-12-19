@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
-
+#include <deque>
 
 
 #include "combinatorics.hpp"
@@ -18,6 +18,7 @@
 #include "HiddenMarkov.hpp"
 #include "datamodel.hpp"
 #include "utility.hpp"
+#include "FileIOManager.hpp"
 // using AlleleSites;
 
 namespace adios {
@@ -90,6 +91,7 @@ public:
     bool passes_filters(const adios::adios_parameters& params) const;
     
     // Output line
+    std::vector<std::string> record(void) const;
     std::string record_string(void) const;
 
 };
@@ -124,10 +126,10 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
 
  
 // Perform adios on the entire dataset d using parameters `params`
-void adios(Dataset& d, const adios_parameters& params);
+void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out);
 
 // Perform adios on a pair of individuals on one chromosome
-void adios_pair_unphased(const Indptr_pair& pair,
+std::vector<Segment> adios_pair_unphased(const Indptr_pair& pair,
                          int chromidx,
                          const adios_parameters& params);
 };

@@ -19,3 +19,16 @@ TEST(FileIO, readline) {
     CHECK(expected.compare(observed) == 0);
     CHECK(lf.eof());
 }
+
+TEST(FileIO, DelmitedFileWriter) {
+    const char* filename =  "unittests/data/tmp_dwf.txt";
+    DelimitedFileWriter fw(filename, ',');
+    std::vector<std::string> toks = {"a", "b", "c"};
+    fw.writetoks(toks);
+    fw.closefile();
+
+    FileReader f(filename);
+    std::string read = f.getline();
+    CHECK(read.compare("a,b,c") == 0); 
+    remove(filename);
+}

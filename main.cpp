@@ -9,6 +9,7 @@
 #include "adios.hpp"
 #include "ArgumentParser.hpp"
 #include "datamodel.hpp"
+#include "FileIOManager.hpp"
 
 
 
@@ -28,6 +29,7 @@ int main(int argc, char** argv) {
         //                  Argument           Action       Default               narg  help string
         CommandLineArgument{"vcf",               "store",     {""},               1,    "VCF input file"},
         CommandLineArgument{"vcf_freq",          "store",     {"AF"},             1,    "VCF INFO field containing allele frequency"},
+        CommandLineArgument{"out",               "store",     {"-"},              1,    "Write output to file"},    
         CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},             0,    "Calculate allele frequencies from data"},
         CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},             0,    "Include singleton variants from dataset"},
         CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},             0,    "Include monomorphic positions in dataset"},
@@ -136,7 +138,8 @@ int main(int argc, char** argv) {
     // Precompute the emission matrices.
     params.calculate_emission_mats(data);
 
-    adios::adios(data, params);
+    DelimitedFileWriter output(args["out"][0], '\t');
+    adios::adios(data, params, output);
 }
 
 
