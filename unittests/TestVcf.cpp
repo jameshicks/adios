@@ -6,7 +6,7 @@ TEST_GROUP(VCF) {};
 
 TEST(VCF, ReadVCF) {
     VCFParams vcfp = {false, false, false, "AF"};
-    Dataset d = read_vcf("unittests/test.vcf", vcfp);
+    Dataset d = read_vcf("unittests/data/vcf/test.vcf", vcfp);
     CHECK_EQUAL(3, d.ninds());
     CHECK_EQUAL(2, d.nchrom());
     CHECK_EQUAL(6, d.nmark());
@@ -26,7 +26,7 @@ TEST(VCF, ReadVCF) {
 
 TEST(VCF, VCFEmpiricalFrequency) {
     VCFParams vcfp = {false, false, true, "DOESNT MATTER"};
-    Dataset d = read_vcf("unittests/test.vcf", vcfp);
+    Dataset d = read_vcf("unittests/data/vcf/test.vcf", vcfp);
     CHECK_EQUAL(3, d.ninds());
     CHECK_EQUAL(2, d.nchrom());
     CHECK_EQUAL(6, d.nmark());
