@@ -85,7 +85,7 @@ adios_parameters params_from_args(std::map<std::string, std::vector<std::string>
     params.unphased_transition_mat = unphased_transition_matrix(params.gamma_, params.rho);
 
     params.rare_thresh = stod(args["rare"][0]);
-    params.min_length = stoi(args["minlength"][0]) * 1e6;
+    params.min_length = stod(args["minlength"][0]) * 1e6;
     params.min_mark = stoi(args["minmark"][0]);
     params.min_lod = stod(args["minlod"][0]);
 
