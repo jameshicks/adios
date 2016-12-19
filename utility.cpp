@@ -39,6 +39,19 @@ std::string bp_formatter(unsigned int bp) {
     return std::to_string(bp);
 }
 
+std::vector<double> arange(double start, double stop, double step) {
+    std::vector<double> out;
+    
+    double v = start; 
+    while (v <= stop) {
+        out.push_back(v);
+        v += step;
+    }
+
+    return out;
+}
+
+
 int ValueRun::length(void) {
     return stop - start;
 }

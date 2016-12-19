@@ -15,7 +15,7 @@ size_t indexof(std::vector<std::string>& v, std::string& val);
 
 std::string sfloat(double v, unsigned int places);
 std::string bp_formatter(unsigned int bp);
-
+std::vector<double> arange(double start, double stop, double step);
 
 inline double round(double val, unsigned int places) {  return roundf(val*pow(10, places)) / pow(10,places); } 
 struct ValueRun {
