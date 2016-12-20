@@ -7,6 +7,7 @@
 #include <vector>
 #include <stdexcept>
 #include <initializer_list>
+#include <cstring> // for std::memcpy
 
 namespace Linalg {
 
