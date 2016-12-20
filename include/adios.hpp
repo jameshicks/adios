@@ -2,7 +2,6 @@
 #define ADIOS_HPP
 
 #include <map>
-#include <unordered_map>
 #include <set>
 #include <utility> // for std::pair 
 #include <cmath> // For log
@@ -113,11 +112,6 @@ Matrix unphased_genotype_error_matrix(double eps);
 
 // Creates the HMM emission matrix for a genotype with minor allele frequency q
 Matrix unphased_emission_matrix(double q);
-
-// ADIOS works on a subset of markers. This function translates
-// the indices of the markers used back to the full indices.
-AlleleSites update_indices(const AlleleSites& inp,
-                           const std::map<int, int>& translator);
 
 // For two individuals, find a set of informative sites
 adios_sites find_informative_sites_unphased(const Indptr& ind1,

@@ -123,6 +123,21 @@ void adios_parameters::calculate_emission_mats(const Dataset& data) {
     }
 }
 
+// We need to get the indices in hap to correspond to the values in informative_sites
+AlleleSites update_indices(const AlleleSites& hap, const AlleleSites& informative_sites) {
+    AlleleSites a;
+
+    size_t hapsize = hap.size();
+    size_t ninform = informative_sites.size();
+    size_t j = 0; 
+    for (size_t i = 0; i < ninform; ++i) {
+        while (hap[j] < informative_sites[i] && j < hapsize) ++j;
+        if (j >= hapsize) break;
+        if (hap[j] == informative_sites[i]) a.push_back(i);
+    }
+    return a;
+}
+
 adios_sites find_informative_sites_unphased(const Indptr& ind1,
                                             const Indptr& ind2,
                                             const int chromidx,
@@ -164,36 +179,11 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     AlleleSites informative_sites = union_(opposing_homozygotes, rv_sites);
     informative_sites = difference(informative_sites, missing);
 
-    // Since we're using a subset of markers, we should translate the
-    // informative indexes into a newer, more convenient index space.
-    // We'll translate back later.
-    std::unordered_map<int, int> index_translation;
 
-    int newidx = 0;
-    for (auto it = informative_sites.begin();
-            it != informative_sites.end();
-            ++it) {
-        index_translation[*it] = newidx;
-        newidx++;
-    }
-
-
-
-
-    // Restrict to the informative sites
-    AlleleSites a = intersection(ind1->chromosomes[chromidx]->hapa,
-                                 informative_sites);
-    for (size_t i = 0; i < a.size(); ++i) {a[i] = index_translation.at(a[i]); }
-    AlleleSites b = intersection(ind1->chromosomes[chromidx]->hapb,
-                                 informative_sites);
-    for (size_t i = 0; i < b.size(); ++i) {b[i] = index_translation.at(b[i]); }
-    AlleleSites c = intersection(ind2->chromosomes[chromidx]->hapa,
-                                 informative_sites);
-    for (size_t i = 0; i < c.size(); ++i) {c[i] = index_translation.at(c[i]); }
-    AlleleSites d = intersection(ind2->chromosomes[chromidx]->hapb,
-                                 informative_sites);
-    for (size_t i = 0; i < d.size(); ++i) {d[i] = index_translation.at(d[i]); }
-
+    AlleleSites a = update_indices(ind1->chromosomes[chromidx]->hapa, informative_sites);
+    AlleleSites b = update_indices(ind1->chromosomes[chromidx]->hapb, informative_sites);
+    AlleleSites c = update_indices(ind2->chromosomes[chromidx]->hapa, informative_sites);
+    AlleleSites d = update_indices(ind2->chromosomes[chromidx]->hapb, informative_sites);
 
     // AuB and CuD are A ∪ B and C ∪ D
     auto AuB = union_(a, b);
@@ -241,17 +231,6 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     return p;
 }
 
-AlleleSites update_indices(const AlleleSites& inp,
-                           const std::map<int, int>& translator)
-{
-    AlleleSites output;
-    for (auto it = inp.begin();
-            it != inp.end();
-            ++it) {
-        output.push_back(translator.at(*it));
-    }
-    return output;
-}
 
 void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 {
