@@ -138,6 +138,7 @@ AlleleSites update_indices(const AlleleSites& hap, const AlleleSites& informativ
     return a;
 }
 
+
 adios_sites find_informative_sites_unphased(const Indptr& ind1,
                                             const Indptr& ind2,
                                             const int chromidx,
@@ -146,20 +147,16 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
 
     using namespace setops;
 
-    // rv_positions are  Q & (A | B) & (C | D)
-    // std::vector<int> rv_sites = multi_intersection({
-    //     rares,
-    //     ind1->chromosomes[chromidx]->has_minor_allele(),
-    //     ind2->chromosomes[chromidx]->has_minor_allele()
-    // });
-
     auto hma1 = ind1->chromosomes[chromidx]->has_minor_allele();
     auto hma2 = ind2->chromosomes[chromidx]->has_minor_allele();
-    // A more inclusive is Q & (A | B | C | D)
-    std::vector<int> any_minor = union_(hma1, hma2);
 
-    std::vector<int> rv_sites = intersection(rares, any_minor);
+    // we're looking for Q & (A | B | C | D) which is the same as 
+    // (Q&A | Q&B | Q&C | Q&D), but we'll have to do some testing to see which
+    // is faster
+    auto hra1 = intersection(rares, hma1);
+    auto hra2 = intersection(rares, hma2);
 
+    std::vector<int> any_rvs = union_(hra1, hra2);
 
     // opposite_homozygotes are ((A & B) - (C | D)) | ((C & D) - (A | B))
     AlleleSites opp1 = difference(
@@ -176,7 +173,7 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     AlleleSites missing = union_(ind1->chromosomes[chromidx]->missing,
                                  ind2->chromosomes[chromidx]->missing);
     // Informative sites are the union of opposing homozygotes and shared rv sites
-    AlleleSites informative_sites = union_(opposing_homozygotes, rv_sites);
+    AlleleSites informative_sites = union_(opposing_homozygotes, any_rvs);
     informative_sites = difference(informative_sites, missing);
 
 
