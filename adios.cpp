@@ -153,10 +153,10 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     //     ind2->chromosomes[chromidx]->has_minor_allele()
     // });
 
+    auto hma1 = ind1->chromosomes[chromidx]->has_minor_allele();
+    auto hma2 = ind2->chromosomes[chromidx]->has_minor_allele();
     // A more inclusive is Q & (A | B | C | D)
-    std::vector<int> any_minor = union_(
-                                     ind1->chromosomes[chromidx]->has_minor_allele(),
-                                     ind2->chromosomes[chromidx]->has_minor_allele());
+    std::vector<int> any_minor = union_(hma1, hma2);
 
     std::vector<int> rv_sites = intersection(rares, any_minor);
 
@@ -164,11 +164,11 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     // opposite_homozygotes are ((A & B) - (C | D)) | ((C & D) - (A | B))
     AlleleSites opp1 = difference(
                            ind1->chromosomes[chromidx]->homozygous_minor(),
-                           ind2->chromosomes[chromidx]->has_minor_allele());
+                           hma2);
 
     AlleleSites opp2 = difference(
                            ind2->chromosomes[chromidx]->homozygous_minor(),
-                           ind1->chromosomes[chromidx]->has_minor_allele());
+                           hma1);
 
     AlleleSites opposing_homozygotes = union_(opp1, opp2);
 
