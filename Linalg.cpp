@@ -187,14 +187,6 @@ Vector Vector::operator-(const Vectorlike& v)
     return outp;
 }
 
-double dot_product(const Vectorlike& u, const Vectorlike& v)
-{
-    if (u.size != v.size) { throw std::invalid_argument("non-conformable vectors"); }
-    double outp = 0.0;
-    for (size_t i = 0; i < u.size; ++i) { outp += v.get(i) * u.get(i); }
-    return outp;
-}
-
 // Matrix
 void Matrix::create_data_array(size_t size)
 {
@@ -575,15 +567,17 @@ Matrix dmatrix_matrix_product(const Vectorlike& v, const Matrix& a) {
 }
 
 Matrix matrix_dmatrix_product(const Matrix& a, const Vectorlike& v) {
-    // Post-multiplying by a diagonal matrix multiplies column j by
-    // the jth diagonal element
     if (!a.is_square() && a.nrow == v.size) { throw std::invalid_argument("Nonconformable operands"); }
     Matrix z(a);
-    for (size_t j=0; j < v.size; ++j) {
-        auto col = z.col_view(j);
-        col.inplace_mul(v.get(j));
-    }
-    return z;
+    for (size_t j = 0; j < v.size; ++j) {
+        double val = v.get(j);
+        for (size_t i = 0; i < a.nrow; ++i) {
+            z.data[i*z.ncol + j] *= val;
+        }
+    }   
+    return z; 
 }
+
+
 }
 

@@ -101,15 +101,12 @@ struct Vector : public Vectorlike {
 
 
 
-double dot_product(const Vectorlike& u, const Vectorlike& v);
-
 class Matrix {
-  private:
+  public:
   double* data;
   void create_data_array(size_t size);
   inline size_t translate_index(size_t i, size_t j) const { return i * ncol + j; }
   
-  public:
   size_t nrow;
   size_t ncol;
   
@@ -190,7 +187,18 @@ class Matrix {
 
 };
 
+
+
 Matrix diag(const Vectorlike& v);
+
+
+inline double dot_product(const Vectorlike& u, const Vectorlike& v) {
+    if (u.size != v.size) { throw std::invalid_argument("non-conformable vectors"); }
+    double outp = 0.0;
+    for (size_t i = 0; i < u.size; ++i) { outp += v.get(i) * u.get(i); }
+    return outp;  
+}
+
 
 Matrix matrix_product(const Matrix& a, const Matrix& b);
 Matrix kronecker_product(const Matrix& a, const Matrix& b);

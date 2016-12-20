@@ -167,7 +167,7 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     // Since we're using a subset of markers, we should translate the
     // informative indexes into a newer, more convenient index space.
     // We'll translate back later.
-    std::map<int, int> index_translation;
+    std::unordered_map<int, int> index_translation;
 
     int newidx = 0;
     for (auto it = informative_sites.begin();

@@ -2,6 +2,7 @@
 #define ADIOS_HPP
 
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <utility> // for std::pair 
 #include <cmath> // For log
