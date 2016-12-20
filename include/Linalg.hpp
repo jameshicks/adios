@@ -27,12 +27,25 @@ struct Vectorlike {
     return true;
   }
   inline bool operator!=(const Vectorlike& other) const { return !(*this == other); }
-  inline void inplace_add(const double v) { for (size_t i=0; i < size; ++i) set(i, get(i) + v); }
-  inline void inplace_sub(const double v) { for (size_t i=0; i < size; ++i) set(i, get(i) - v); }
-  inline void inplace_mul(const double v) { for (size_t i=0; i < size; ++i) set(i, get(i) * v); }
-  inline void inplace_div(const double v) { for (size_t i=0; i < size; ++i) set(i, get(i) / v); }
-  inline void boundscheck(size_t i) const { if (i >= size) throw std::invalid_argument("index oor"); }
-
+  inline void inplace_add(const double v) {
+     size_t n = size;
+     for (size_t i=0; i < n; ++i) set(i, get(i) + v); 
+   }
+  inline void inplace_sub(const double v) {
+     size_t n = size;
+     for (size_t i=0; i < n; ++i) set(i, get(i) - v); 
+   }
+  inline void inplace_mul(const double v) {
+     size_t n = size;
+     for (size_t i=0; i < n; ++i) set(i, get(i) * v); 
+   }
+  inline void inplace_div(const double v) {
+     size_t n = size;
+     const double recip = 1.0 / v;
+     for (size_t i=0; i < n; ++i) set(i, get(i) * recip); 
+   }
+  // inline void boundscheck(size_t i) const { if (i >= size) throw std::invalid_argument("index oor"); }
+  inline bool boundscheck(size_t i) const { return i < size; }
   size_t argmax(void) const;
   size_t argmin(void) const;
   double max(void) const;
@@ -43,14 +56,14 @@ struct Vectorlike {
 
 struct VectorView : public Vectorlike {
   double* const data;
-  size_t stride;
+  const size_t stride;
   VectorView(double* const d, size_t sz, size_t strd);
 
 
 
   inline double get(size_t idx) const { return data[idx*stride]; }
-  inline void set(size_t idx, double v) { data[idx*stride] = v; }
-  inline double operator[](size_t idx) { return data[idx*stride]; }
+  inline void set(size_t idx, double v)  { data[idx*stride] = v; }
+  inline double operator[](size_t idx)  { return data[idx*stride]; }
   
   inline double* begin(void) { return data; }
   inline double* end(void) { return data+size; }
@@ -82,15 +95,14 @@ struct Vector : public Vectorlike {
   Vector& operator=(const double d);
   Vector& operator=(const Vector v); // copy assignment
   // Vector& operator=(Vector&& v); // move assignment
-  
-  inline double get(size_t idx) const { 
-    boundscheck(idx);
-    return data[idx]; 
-  }
-  inline void set(size_t idx, const double v) {
-  boundscheck(idx);
-   data[idx] = v; 
- }
+
+    inline double get(size_t idx) const {
+      return data[idx];
+    }
+    inline void set(size_t idx, const double v) {
+      data[idx] = v;
+    }
+
   Vector operator+(const double d);
   Vector operator-(const double d);
   Vector operator*(const double d);
@@ -132,8 +144,8 @@ class Matrix {
 }
 
   // getters and setters 
-  inline double get (size_t i, size_t j) const { return data[translate_index(i,j)]; }
-  inline void set (size_t i, size_t j, double v) { data[translate_index(i,j)] = v; }
+  inline double get (size_t i, size_t j) const { return data[i * ncol + j]; }
+  inline void set (size_t i, size_t j, double v) { data[i * ncol + j] = v; }
   double sum(void) const;
 
   // operators
@@ -192,12 +204,17 @@ class Matrix {
 Matrix diag(const Vectorlike& v);
 
 
-inline double dot_product(const Vectorlike& u, const Vectorlike& v) {
+  inline double dot_product(const Vectorlike & u, const Vectorlike & v) {
     if (u.size != v.size) { throw std::invalid_argument("non-conformable vectors"); }
     double outp = 0.0;
-    for (size_t i = 0; i < u.size; ++i) { outp += v.get(i) * u.get(i); }
-    return outp;  
-}
+    double val = 0.0;
+    size_t n = u.size;
+    for (size_t i = 0; i < n; ++i) {
+      val = v.get(i) * u.get(i);
+      outp += val;
+    }
+    return outp;
+  }
 
 
 Matrix matrix_product(const Matrix& a, const Matrix& b);

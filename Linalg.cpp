@@ -27,7 +27,8 @@ size_t Vectorlike::argmax(void) const
 {
     if (size < 2) { return 0; }
     size_t arg = 0;
-    for (size_t i = 1; i < size; ++i) { if (get(i) > get(arg)) { arg = i; } }
+    size_t n = size;
+    for (size_t i = 1; i < n; ++i) { if (get(i) > get(arg)) { arg = i; } }
     return arg;
 }
 
@@ -491,8 +492,9 @@ Vector Matrix::min_row(void) const
 
 
 Matrix diag(const Vectorlike& v) {
-    Matrix d(v.size, v.size, 0.0);
-    for (size_t i=0; i<v.size; ++i) { d.set(i,i,v.get(i)); }
+    size_t n = v.size;
+    Matrix d(n, n, 0.0);
+    for (size_t i = 0; i < n; ++i) { d.set( i, i, v.get(i)); }
     return d;
 }
 
