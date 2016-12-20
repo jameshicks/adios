@@ -267,7 +267,7 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
     
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
         
-        double signpost = 0.0; double signpost_step = 0.05; 
+        double signpost = 0.0; double signpost_step = 0.01; 
         for (size_t pairidx = 0; pairidx < pairs.size(); ++pairidx) {
             Indptr_pair pair = pairs[pairidx];
 
