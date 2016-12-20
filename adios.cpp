@@ -279,9 +279,8 @@ std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
     std::vector<Matrix> emissions;
     emissions.reserve(nmark);
     for (int i = 0; i < nmark; ++i) {
-        // Lookup the precomputed matrix
-        Matrix emiss = params.emission_mats.at(chromobj->frequencies[i]);
-        emissions.push_back(emiss);
+        // Save the precomputed matrices
+        emissions.push_back(params.emission_mats.at(chromobj->frequencies[i]));
     }
 
     GenotypeHMM model(observations, emissions, params.unphased_transition_mat);
