@@ -110,6 +110,7 @@ struct Vector : public Vectorlike {
   Vector operator/(const double d);
   Vector operator+(const Vectorlike& v);
   Vector operator-(const Vectorlike& v);
+  Vector& operator/=(const double d);
 };
 
 

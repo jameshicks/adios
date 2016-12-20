@@ -39,7 +39,7 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
         Matrix b = Linalg::matrix_dmatrix_product(transition_matrix, d);
 
         Vector col = Linalg::vector_matrix_product(fwcv, b);
-        col = col / col.sum(); // Normalize column
+        col /= col.sum(); // Normalize column
         fwmat.set_column(obsidx + 1, col);
 
     }
@@ -57,7 +57,7 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
         Matrix a = Linalg::matrix_dmatrix_product(transition_matrix, d);
 
         auto col = Linalg::matrix_vector_product(a, bwrv);
-        col = col / col.sum(); // Normalize again;
+        col /= col.sum(); // Normalize again;
 
         bwmat.set_column(obsidx - 1, col);
     }

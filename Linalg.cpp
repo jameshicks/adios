@@ -172,6 +172,14 @@ Vector Vector::operator/(const double d)
     return outp;
 }
 
+Vector& Vector::operator/=(const double d) {
+    size_t n = size;
+    for (size_t i = 0; i < n; ++i) {
+        data[i] /= d;
+    }
+    return *this;
+}
+
 Vector Vector::operator+(const Vectorlike& v)
 {
     if (size != v.size) {throw std::invalid_argument("Nonconformable vectors"); }
