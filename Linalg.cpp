@@ -584,13 +584,13 @@ Matrix Matrix_dmatrix_product_3x3(const Matrix& a, const Vectorlike& v) {
     double z = v.get(2);
 
     q.data[0] = x * a.data[0];
-    q.data[1] = x * a.data[1];
-    q.data[2] = x * a.data[2];
-    q.data[3] = y * a.data[3];
+    q.data[1] = y * a.data[1];
+    q.data[2] = z * a.data[2];
+    q.data[3] = x * a.data[3];
     q.data[4] = y * a.data[4];
-    q.data[5] = y * a.data[5];
-    q.data[6] = z * a.data[6];
-    q.data[7] = z * a.data[7];
+    q.data[5] = z * a.data[5];
+    q.data[6] = x * a.data[6];
+    q.data[7] = y * a.data[7];
     q.data[8] = z * a.data[8];
     return q;
 }
