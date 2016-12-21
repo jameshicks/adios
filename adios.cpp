@@ -159,11 +159,11 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     std::vector<int> any_rvs = union_(hra1, hra2);
 
     // opposite_homozygotes are ((A & B) - (C | D)) | ((C & D) - (A | B))
-    // or more simply: (A&B) ⊖ (C&D)
-    AlleleSites opposing_homozygotes = symmetric_difference(ind1->chromosomes[chromidx]->homozygous_minor(),
-                                                            ind2->chromosomes[chromidx]->homozygous_minor());
-
-
+    AlleleSites opp1 = difference(ind1->chromosomes[chromidx]->homozygous_minor(),
+                                  hma2);
+    AlleleSites opp2 = difference(ind2->chromosomes[chromidx]->homozygous_minor(),
+                                  hma1);
+    auto opposing_homozygotes = union_(opp1, opp2);
     AlleleSites missing = union_(ind1->chromosomes[chromidx]->missing,
                                  ind2->chromosomes[chromidx]->missing);
     // Informative sites are the union of opposing homozygotes and shared rv sites
