@@ -31,6 +31,5 @@ TEST(UtilityFunctions, arange) {
     std::vector<double> observed = arange(0,1,.25);
     std::vector<double> expected = {0, 0.25, 0.5, 0.75, 1.0};
     CHECK(observed==expected);
-    for (auto v : observed) {std::cout << v << ' '; }
-        std::cout << std::endl;
+
 }
