@@ -544,25 +544,41 @@ Matrix direct_product(const Matrix& a, const Matrix& b)
     return outp;
 }
 
+
+
+void vector_matrix_product(const Vectorlike& v, const Matrix& b, Vectorlike* into) {
+    for (size_t idx = 0; idx < v.size; ++idx) {
+        into->set(idx, dot_product(v, b.col_view(idx)));
+    }
+}
+
+void matrix_vector_product(const Matrix& a, const Vectorlike& v, Vectorlike* into) {
+    // if (!(v.size == a.nrow == into->size)) { throw std::invalid_argument("Vector and Matrix do not conform"); }
+
+    for (size_t idx = 0; idx < v.size; ++idx) {
+        into->set(idx, dot_product(a.row_view(idx), v));
+    }
+
+}
+
 Vector vector_matrix_product(const Vectorlike& v, const Matrix& b) {
     if (v.size != b.ncol) { throw std::invalid_argument("Vector and Matrix do not conform"); }
     Vector outp(v.size);
-    for (size_t idx = 0; idx < v.size; ++idx) {
-        outp.set(idx, dot_product(v, b.col_view(idx)));
-    }
 
+    vector_matrix_product(v, b, &outp);
     return outp;
 }
 
 Vector matrix_vector_product(const Matrix& a, const Vectorlike& v) {
     if (v.size != a.nrow) { throw std::invalid_argument("Vector and Matrix do not conform"); }
     Vector outp(v.size);
-    for (size_t idx = 0; idx < v.size; ++idx) {
-        outp.set(idx, dot_product(a.row_view(idx), v));
-    }
+
+    matrix_vector_product(a, v, &outp);
 
     return outp;
 }
+
+
 
 Matrix dmatrix_matrix_product(const Vectorlike& v, const Matrix& a) {
     // Post-multiplying by a diagonal matrix multiplies row i by
@@ -576,35 +592,21 @@ Matrix dmatrix_matrix_product(const Vectorlike& v, const Matrix& a) {
     return z;
 }
 
-Matrix Matrix_dmatrix_product_3x3(const Matrix& a, const Vectorlike& v) {
-    Matrix q(3,3);
 
-    double x = v.get(0);
-    double y = v.get(1);
-    double z = v.get(2);
-
-    q.data[0] = x * a.data[0];
-    q.data[1] = y * a.data[1];
-    q.data[2] = z * a.data[2];
-    q.data[3] = x * a.data[3];
-    q.data[4] = y * a.data[4];
-    q.data[5] = z * a.data[5];
-    q.data[6] = x * a.data[6];
-    q.data[7] = y * a.data[7];
-    q.data[8] = z * a.data[8];
-    return q;
+void matrix_dmatrix_product(const Matrix& a, const Vectorlike& v, Matrix* into) {
+    for (size_t col = 0; col < a.ncol; col++) {
+        double val = v.get(col);
+        for (size_t i = 0; i < a.nrow; i++) {
+            (into->data)[(i*a.ncol) + col] = a.data[(i*a.ncol)+col] * val; 
+        }
+    }    
+   
 }
 
 Matrix matrix_dmatrix_product(const Matrix& a, const Vectorlike& v) {
     if (!a.is_square() && a.nrow == v.size) { throw std::invalid_argument("Nonconformable operands"); }
-    if (a.nrow == 3) { return Matrix_dmatrix_product_3x3(a,v); }
     Matrix z(a);
-    for (size_t j = 0; j < v.size; ++j) {
-        double val = v.get(j);
-        for (size_t i = 0; i < a.nrow; ++i) {
-            z.data[i*z.ncol + j] *= val;
-        }
-    }   
+    matrix_dmatrix_product(a, v, &z);
     return z; 
 }
 

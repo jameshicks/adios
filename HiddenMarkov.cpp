@@ -30,15 +30,19 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
 
     Matrix first_emiss(nemiss, nstate, 1.0 / nemiss);
 
+    // Temporary variables that we're gonna keep using to avoid constantly malloc/freeing new ones
+    Vector col(nstate); 
+    Matrix A(nstate, nstate);
+
     for (size_t obsidx = 0; obsidx < nobs; ++obsidx) {
         int obs = observations[obsidx];
         const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : emission_matrices[obsidx-1];
         auto fwcv = fwmat.col_view(obsidx);
 
         auto d = cur_obs_probs.row_view(obs);
-        Matrix b = Linalg::matrix_dmatrix_product(transition_matrix, d);
+        Linalg::matrix_dmatrix_product(transition_matrix, d, &A);
 
-        Vector col = Linalg::vector_matrix_product(fwcv, b);
+        vector_matrix_product(fwcv, A, &col);
         col /= col.sum(); // Normalize column
         fwmat.set_column(obsidx + 1, col);
 
@@ -54,9 +58,9 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
         auto bwrv = bwmat.col_view(obsidx);
 
         auto d = cur_obs_probs.row_view(observations[obsidx - 1]);
-        Matrix a = Linalg::matrix_dmatrix_product(transition_matrix, d);
+        Linalg::matrix_dmatrix_product(transition_matrix, d, &A);
 
-        auto col = Linalg::matrix_vector_product(a, bwrv);
+        Linalg::matrix_vector_product(A, bwrv, &col);
         col /= col.sum(); // Normalize again;
 
         bwmat.set_column(obsidx - 1, col);

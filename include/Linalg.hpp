@@ -222,6 +222,14 @@ Matrix diag(const Vectorlike& v);
 Matrix matrix_product(const Matrix& a, const Matrix& b);
 Matrix kronecker_product(const Matrix& a, const Matrix& b);
 Matrix direct_product(const Matrix& a, const Matrix& b);
+
+
+// For preallocated output vectors
+void vector_matrix_product(const Vectorlike& v, const Matrix& b, Vectorlike* into);
+void matrix_vector_product(const Matrix& a, const Vectorlike& v, Vectorlike* into);
+
+
+// Allocates a new output vector
 Vector vector_matrix_product(const Vectorlike& v, const Matrix& b);
 Vector matrix_vector_product(const Matrix& a, const Vectorlike& v);
 
@@ -229,6 +237,7 @@ Vector matrix_vector_product(const Matrix& a, const Vectorlike& v);
 Matrix dmatrix_matrix_product(const Vectorlike& v, const Matrix& a);
 
 // A matrix post-multiplied by a diagonal matrix
+void matrix_dmatrix_product(const Matrix& a, const Vectorlike& v, Matrix* into); // For preallocated outputs
 Matrix matrix_dmatrix_product(const Matrix& a, const Vectorlike& v);
 
 }
