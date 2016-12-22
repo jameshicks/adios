@@ -30,7 +30,6 @@ TEST(Vector, VectorBasic)
     CHECK_EQUAL(1, q.get(0));
     CHECK(q.get(0) != 2);
     CHECK(q.size == 3);
-    CHECK_THROWS(std::invalid_argument, q.get(100));
 
     CHECK_EQUAL(0, Linalg::dot_product(q,v));
     DOUBLES_EQUAL(14.0, Linalg::dot_product(q, q), 0.001);
