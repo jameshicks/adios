@@ -132,16 +132,26 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     auto a = ind1->chromosomes[chromidx]->dosages();
     auto b = ind2->chromosomes[chromidx]->dosages();
 
+    auto miss_a = ind1->chromosomes[chromidx]->missing;
+    auto miss_b = ind2->chromosomes[chromidx]->missing;
 
     std::vector<int> informatives;
     std::vector<int> states;
 
-    informatives.reserve(50000);
-    states.reserve(50000);
+    informatives.reserve(30000);
+    states.reserve(30000);
 
     size_t next_rare = 0;
+    size_t nm_a = 0;
+    size_t nm_b = 0;
     for (size_t i = 0; i < a.size(); i++) {
         while (rares[next_rare] < i) { next_rare++; } 
+        while (nm_a < miss_a.size() && miss_a[nm_a] < i) { nm_a++; }
+        while (nm_b < miss_b.size() && miss_b[nm_b] < i) { nm_b++; }
+
+        if ((nm_a < miss_a.size() && i == miss_a[nm_a]) || (nm_b < miss_b.size() && i == miss_a[nm_b])) {
+            continue;
+        }
 
         if (!(a[i] || b[i])) continue;
         
