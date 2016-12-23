@@ -20,10 +20,9 @@ TEST(HiddenMarkov, ForwardsBackwards)
 
     Matrix e = {{.99, .01}, {0.01, .99}};
     // GenotypeHMM uses different emission tables for each observation
-    std::vector<Matrix> ev = {};
-    for (size_t i=0; i<o.size(); ++i) { ev.push_back(e); } 
-
-    GenotypeHMM hmmfwbw = GenotypeHMM(o, ev, t);
+    std::vector<Matrix*> evp(o.size(), &e);
+ 
+    GenotypeHMM hmmfwbw = GenotypeHMM(o, evp, t);
     auto pred_states = hmmfwbw.decode(false);
 
     CHECK(o == pred_states);

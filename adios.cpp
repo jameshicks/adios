@@ -209,11 +209,12 @@ std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
 
 
     // Make the emission matrices
-    std::vector<Matrix> emissions;
+    std::vector<Matrix*> emissions;
     emissions.reserve(nmark);
     for (int i = 0; i < nmark; ++i) {
         // Save the precomputed matrices
-        emissions.push_back(params.emission_mats.at(chromobj->frequencies[i]));
+        Matrix* mp = const_cast<Matrix*>(&(params.emission_mats.at(chromobj->frequencies[i])));
+        emissions.push_back(mp);
     }
 
     GenotypeHMM model(observations, emissions, params.unphased_transition_mat);
@@ -239,7 +240,7 @@ Segment::Segment(Indptr a,
                  ValueRun& run,
                  Chromptr c,
                  std::vector<int>& obs,
-                 std::vector<Matrix>& emissions,
+                 std::vector<Matrix*>& emissions,
                  std::vector<int>& adiossites,
                  const adios_parameters& params)
 {
@@ -286,7 +287,7 @@ void Segment::trim(std::vector<int>& observations)
 }
 
 double Segment::calculate_lod(std::vector<int>& observations,
-                              std::vector<Matrix>& emissions,
+                              std::vector<Matrix*>& emissions,
                               const adios::adios_parameters& params) const
 {
     using std::log10;
@@ -303,8 +304,8 @@ double Segment::calculate_lod(std::vector<int>& observations,
 
     for (size_t i = start; i < stop; ++i) {
         int obs = observations[i];
-        log_ibd_prob += log10(emissions[i].get(obs, state));
-        log_null_prob += log10(emissions[i].get(obs, 0));
+        log_ibd_prob += log10(emissions[i]->get(obs, state));
+        log_null_prob += log10(emissions[i]->get(obs, 0));
     }
 
     log_ibd_prob += log10(entry) + log10(exit);

@@ -2,7 +2,7 @@
 
 
 GenotypeHMM::GenotypeHMM(const std::vector<int>& obs,
-                         const std::vector<Matrix>& emissions,
+                         const std::vector<Matrix*>& emissions,
                          const Linalg::Matrix& transition)
 {
     observations = obs;
@@ -17,8 +17,8 @@ GenotypeHMM::GenotypeHMM(const std::vector<int>& obs,
 std::vector<int> GenotypeHMM::forwards_backwards(void) const
 {
     size_t nobs = observations.size();
-    size_t nemiss = emission_matrices[0].nrow;
-    size_t nstate = emission_matrices[0].ncol;
+    size_t nemiss = emission_matrices[0]->nrow;
+    size_t nstate = emission_matrices[0]->ncol;
 
     std::vector<int> outp(nobs);
 
@@ -36,7 +36,7 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
 
     for (size_t obsidx = 0; obsidx < nobs; ++obsidx) {
         int obs = observations[obsidx];
-        const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : emission_matrices[obsidx-1];
+        const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : *(emission_matrices[obsidx-1]);
         auto fwcv = fwmat.col_view(obsidx);
 
         auto d = cur_obs_probs.row_view(obs);
@@ -54,7 +54,7 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
     for (int obsidx=nobs; obsidx>0; obsidx--) 
     {
 
-        const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : emission_matrices.at(obsidx-1);
+        const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : *(emission_matrices.at(obsidx-1));
         auto bwrv = bwmat.col_view(obsidx);
 
         auto d = cur_obs_probs.row_view(observations[obsidx - 1]);
@@ -113,7 +113,7 @@ std::vector<int> GenotypeHMM::viterbi(void) const
             Linalg::Vector temp_prob(nstates);
 
             temp_prob = (log_probs +
-                         log(emission_matrices[obsidx].get(obs, state)) +
+                         log(emission_matrices[obsidx]->get(obs, state)) +
                          ln_transition_matrix.col_view(state));
 
             auto best = temp_prob.argmax();
