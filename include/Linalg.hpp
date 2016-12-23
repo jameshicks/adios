@@ -13,9 +13,13 @@ namespace Linalg {
 
 struct Vectorlike {
   size_t size;
-  explicit Vectorlike(size_t sz) : size(sz) {}
-  virtual double get(size_t idx) const =0;
-  virtual void set(size_t idx, double v) =0;
+  size_t stride;
+  double* data;
+  explicit Vectorlike(size_t sz, size_t strd) : size(sz), stride(strd)  {}
+
+  inline double get(size_t idx) const { return data[idx*stride]; }
+  inline void set(size_t idx, double v)  { data[idx*stride] = v; }
+  inline double operator[](size_t idx)  { return data[idx*stride]; }
 
   void set_all(double v);
   
@@ -56,23 +60,14 @@ struct Vectorlike {
 };
 
 struct VectorView : public Vectorlike {
-  double* const data;
-  const size_t stride;
-  VectorView(double* const d, size_t sz, size_t strd);
+  VectorView(double* d, size_t sz, size_t strd);
 
-
-
-  inline double get(size_t idx) const { return data[idx*stride]; }
-  inline void set(size_t idx, double v)  { data[idx*stride] = v; }
-  inline double operator[](size_t idx)  { return data[idx*stride]; }
-  
   inline double* begin(void) { return data; }
   inline double* end(void) { return data+size; }
 
 };
 
 struct Vector : public Vectorlike {
-  double* data;
   void create_data_array(size_t sz);
 
   Vector apply(double (*f)(double)) {
@@ -96,13 +91,6 @@ struct Vector : public Vectorlike {
   Vector& operator=(const double d);
   Vector& operator=(const Vector v); // copy assignment
   // Vector& operator=(Vector&& v); // move assignment
-
-    inline double get(size_t idx) const {
-      return data[idx];
-    }
-    inline void set(size_t idx, const double v) {
-      data[idx] = v;
-    }
 
   Vector operator+(const double d);
   Vector operator-(const double d);

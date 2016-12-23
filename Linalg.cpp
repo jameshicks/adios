@@ -58,11 +58,10 @@ void Vectorlike::print(void) const
 
 // Vectorview
 
-VectorView::VectorView(double* const d, size_t sz, size_t strd) : Vectorlike(sz), data(d),
+VectorView::VectorView(double* d, size_t sz, size_t strd) : Vectorlike(sz, strd)
 
-    stride(strd)
 {
-    // Vectorlike::Vectorlike(sz);
+    data=d;
 };
 
 // Vector
@@ -78,12 +77,12 @@ void Vector::swap(Vector& v)
     std::swap(size, v.size);
 }
 
-Vector::Vector(size_t sz) : Vectorlike(sz)
+Vector::Vector(size_t sz) : Vectorlike(sz,1)
 {
     create_data_array(sz);
 }
 
-Vector::Vector(const std::initializer_list<double> v) : Vectorlike(v.size())
+Vector::Vector(const std::initializer_list<double> v) : Vectorlike(v.size(), 1)
 {
     create_data_array(v.size());
     size_t idx = 0;
@@ -93,7 +92,7 @@ Vector::Vector(const std::initializer_list<double> v) : Vectorlike(v.size())
     }
 }
 
-Vector::Vector(const std::vector<double> v) : Vectorlike(v.size())
+Vector::Vector(const std::vector<double> v) : Vectorlike(v.size(), 1)
 {
     create_data_array(v.size());
     size_t idx = 0;
@@ -103,19 +102,19 @@ Vector::Vector(const std::vector<double> v) : Vectorlike(v.size())
     }
 }
 
-Vector::Vector(const VectorView& vv) : Vectorlike(vv.size)
+Vector::Vector(const VectorView& vv) : Vectorlike(vv.size,1)
 {
     create_data_array(vv.size);
     for (size_t i = 0; i < size; ++i) { set(i, vv.get(i)); }
 }
 
-Vector::Vector(Vector& v) : Vectorlike(v.size)
+Vector::Vector(Vector& v) : Vectorlike(v.size, 1)
 {
     create_data_array(v.size);
     std::copy(v.data, v.data + v.size, data);
 }
 
-Vector::Vector(Vector&& v) : Vectorlike(v.size)
+Vector::Vector(Vector&& v) : Vectorlike(v.size, 1)
 {
     // using std::swap;
     std::swap(data, v.data);
