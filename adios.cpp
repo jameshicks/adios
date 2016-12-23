@@ -123,103 +123,36 @@ void adios_parameters::calculate_emission_mats(const Dataset& data) {
     }
 }
 
-// We need to get the indices in hap to correspond to the values in informative_sites
-AlleleSites update_indices(const AlleleSites& hap, const AlleleSites& informative_sites) {
-    AlleleSites a;
-
-    size_t hapsize = hap.size();
-    size_t ninform = informative_sites.size();
-    size_t j = 0; 
-    for (size_t i = 0; i < ninform; ++i) {
-        while (hap[j] < informative_sites[i] && j < hapsize) ++j;
-        if (j >= hapsize) break;
-        if (hap[j] == informative_sites[i]) a.push_back(i);
-    }
-    return a;
-}
-
 
 adios_sites find_informative_sites_unphased(const Indptr& ind1,
                                             const Indptr& ind2,
                                             const int chromidx,
                                             const std::vector<int>& rares)
 {
-
-    using namespace setops;
-
-    auto hma1 = ind1->chromosomes[chromidx]->has_minor_allele();
-    auto hma2 = ind2->chromosomes[chromidx]->has_minor_allele();
-
-    // we're looking for Q & (A | B | C | D) which is the same as 
-    // (Q&A | Q&B | Q&C | Q&D), but we'll have to do some testing to see which
-    // is faster
-    auto hra1 = intersection(rares, hma1);
-    auto hra2 = intersection(rares, hma2);
-
-    std::vector<int> any_rvs = union_(hra1, hra2);
-
-    // opposite_homozygotes are ((A & B) - (C | D)) | ((C & D) - (A | B))
-    AlleleSites opp1 = difference(ind1->chromosomes[chromidx]->homozygous_minor(),
-                                  hma2);
-    AlleleSites opp2 = difference(ind2->chromosomes[chromidx]->homozygous_minor(),
-                                  hma1);
-    auto opposing_homozygotes = union_(opp1, opp2);
-    AlleleSites missing = union_(ind1->chromosomes[chromidx]->missing,
-                                 ind2->chromosomes[chromidx]->missing);
-    // Informative sites are the union of opposing homozygotes and shared rv sites
-    AlleleSites informative_sites = union_(opposing_homozygotes, any_rvs);
-    informative_sites = difference(informative_sites, missing);
+    auto a = ind1->chromosomes[chromidx]->dosages();
+    auto b = ind2->chromosomes[chromidx]->dosages();
 
 
-    AlleleSites a = update_indices(ind1->chromosomes[chromidx]->hapa, informative_sites);
-    AlleleSites b = update_indices(ind1->chromosomes[chromidx]->hapb, informative_sites);
-    AlleleSites c = update_indices(ind2->chromosomes[chromidx]->hapa, informative_sites);
-    AlleleSites d = update_indices(ind2->chromosomes[chromidx]->hapb, informative_sites);
+    std::vector<int> informatives;
+    std::vector<int> states;
 
-    // AuB and CuD are A ∪ B and C ∪ D
-    auto AuB = union_(a, b);
-    auto CuD = union_(c, d);
+    informatives.reserve(50000);
+    states.reserve(50000);
 
-    // AnB, CnD are A ∩ B, C ∩ D
-    auto AnB = intersection(a, b);
-    auto CnD = intersection(c, d);
+    size_t next_rare = 0;
+    for (size_t i = 0; i < a.size(); i++) {
+        while (rares[next_rare] < i) { next_rare++; } 
 
-    // AsB,CsD are A ⊖ B, C ⊖ D
-    auto AsB = symmetric_difference(a, b);
-    auto CsD = symmetric_difference(c, d);
+        if (!(a[i] || b[i])) continue;
+        
+        int state = 3 * a[i] + b[i];
+        if (state == 2 || state == 6 || i == rares[next_rare]) {
+            informatives.push_back(i);
+            states.push_back(state);
+        } 
 
-
-    // Generate the positions for each genotype configuration
-    std::vector<AlleleSites> configurations = {
-        std::vector<int>(),       // 0 AA,AA (Not selected)
-        difference(CsD, AuB),   // 1 AA,AB
-        difference(CnD, AuB),   // 2 AA,BB
-        difference(AsB, CuD),   // 3 AB,AA
-        intersection(AsB, CsD), // 4 AB,AB
-        intersection(AsB, CnD), // 5 AB,BB
-        difference(AnB, CuD),   // 6 BB,AA
-        intersection(AnB, CsD), // 7 BB,AB
-        intersection(AnB, CnD)  // 8 BB,BB
-    };
-
-
-    // Put these into a vector called states.
-    std::vector<int> states(informative_sites.size(), 0);
-    for (size_t state = 0; state < configurations.size(); ++state) {
-        auto sites = configurations[state];
-
-        for (auto site : sites) {
-
-            states[site] = state;
-        }
     }
-
-
-    // We need to send the states back with the sites, so that we know
-    // what they correspond to.
-    auto p = make_pair(states, informative_sites);
-
-    return p;
+    return make_pair(states, informatives);
 }
 
 
