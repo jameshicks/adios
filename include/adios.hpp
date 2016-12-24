@@ -10,8 +10,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include <deque>
-
+#include <algorithm>
 
 #include "combinatorics.hpp"
 #include "Linalg.hpp"

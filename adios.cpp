@@ -124,46 +124,72 @@ void adios_parameters::calculate_emission_mats(const Dataset& data) {
 }
 
 
+
+
 adios_sites find_informative_sites_unphased(const Indptr& ind1,
                                             const Indptr& ind2,
                                             const int chromidx,
-                                            const std::vector<int>& rares)
-{
-    auto a = ind1->chromosomes[chromidx]->dosages();
-    auto b = ind2->chromosomes[chromidx]->dosages();
+                                            const std::vector<int>& rares) {
+    auto chromobj = ind1->chromosomes[chromidx]->info;
+    int max_pos = chromobj->positions.back() + 100;
 
-    auto miss_a = ind1->chromosomes[chromidx]->missing;
-    auto miss_b = ind2->chromosomes[chromidx]->missing;
+    auto hapa = ind1->chromosomes[chromidx]->hapa;
+    auto hapb = ind1->chromosomes[chromidx]->hapb;
+    auto hapc = ind2->chromosomes[chromidx]->hapa;
+    auto hapd = ind2->chromosomes[chromidx]->hapb;
+
+    std::vector<int> cur_idx = {0,0,0,0};
+    std::vector<int> cur_vars = {0,0,0,0};
+    int rareidx = 0;
+    int nrare = rares.size();
+    
+    const int nmark = chromobj->nmark();
 
     std::vector<int> informatives;
     std::vector<int> states;
 
-    informatives.reserve(30000);
-    states.reserve(30000);
+    // You cant know ahead of time how many sites are going to be useful 
+    // but in my experience it's less than 5%
+    const int reserve_amount = (int)(0.05 * nmark);
+    informatives.reserve(reserve_amount);
+    states.reserve(reserve_amount);
 
-    size_t next_rare = 0;
-    size_t nm_a = 0;
-    size_t nm_b = 0;
-    for (size_t i = 0; i < a.size(); i++) {
-        while (rares[next_rare] < i) { next_rare++; } 
-        while (nm_a < miss_a.size() && miss_a[nm_a] < i) { nm_a++; }
-        while (nm_b < miss_b.size() && miss_b[nm_b] < i) { nm_b++; }
+    int current_position = 0;
+    do {
+        cur_vars[0] = cur_idx[0] > hapa.size() ? max_pos : hapa[cur_idx[0]];
+        cur_vars[1] = cur_idx[1] > hapb.size() ? max_pos : hapb[cur_idx[1]];
+        cur_vars[2] = cur_idx[2] > hapc.size() ? max_pos : hapc[cur_idx[2]];
+        cur_vars[3] = cur_idx[3] > hapd.size() ? max_pos : hapd[cur_idx[3]];
+        
+        int current_position = *(std::min_element(cur_vars.begin(), 
+                                                  cur_vars.end()));
 
-        if ((nm_a < miss_a.size() && i == miss_a[nm_a]) || (nm_b < miss_b.size() && i == miss_a[nm_b])) {
-            continue;
+        if (current_position == max_pos) break;
+
+        while (rareidx < nrare && rares[rareidx] < current_position) { rareidx++; }
+        bool is_rare = current_position == rares[rareidx];
+
+        int s1 = (cur_vars[0] == current_position) + (cur_vars[1] == current_position); 
+        int s2 = (cur_vars[2] == current_position) + (cur_vars[3] == current_position);
+        int state = 3 * s1 + s2;
+        
+        if (state == 2 || state == 6 || is_rare) {
+            informatives.push_back(current_position);
+            states.push_back(state);
         }
 
-        if (!(a[i] || b[i])) continue;
-        
-        int state = 3 * a[i] + b[i];
-        if (state == 2 || state == 6 || i == rares[next_rare]) {
-            informatives.push_back(i);
-            states.push_back(state);
-        } 
+        for (int i = 0; i < 4; i++) {
+            if (cur_vars[i] == current_position) cur_idx[i]++;
+        }
 
-    }
+    
+
+    } while (current_position != max_pos);
+
     return make_pair(states, informatives);
+    
 }
+
 
 
 void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
