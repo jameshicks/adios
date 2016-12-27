@@ -228,6 +228,10 @@ Matrix dmatrix_matrix_product(const Vectorlike& v, const Matrix& a);
 void matrix_dmatrix_product(const Matrix& a, const Vectorlike& v, Matrix* into); // For preallocated outputs
 Matrix matrix_dmatrix_product(const Matrix& a, const Vectorlike& v);
 
+// Diagonal matrix pre or post multiplied by a vector
+void dmatrix_vector_product(const Vectorlike& d, const Vectorlike& v, Vectorlike* into);
+Vector dmatrix_vector_product(const Vectorlike& d, const Vectorlike& v);
+
 }
 
 #endif

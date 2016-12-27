@@ -609,6 +609,21 @@ Matrix matrix_dmatrix_product(const Matrix& a, const Vectorlike& v) {
     return z; 
 }
 
+void dmatrix_vector_product(const Vectorlike& d, const Vectorlike& v, Vectorlike* into) {
+    double* dest = into->data;
+    for (size_t i = 0; i < d.size; i++) {
+        dest[i*into->stride] = d.data[i*d.stride] * v.data[i*v.stride];
+    }
+}
+
+Vector dmatrix_vector_product(const Vectorlike& d, const Vectorlike& v) {
+    if (d.size != v.size) { throw std::invalid_argument("Nonconformable operands"); } 
+    Vector outp(d.size);
+
+    dmatrix_vector_product(d,v, &outp);
+
+    return outp;
+}
 
 }
 

@@ -200,6 +200,22 @@ TEST(Matrix, ViewObjects) {
 
 
 }
+
+TEST(Matrix, DiagVectorProduct) {
+    using namespace Linalg;
+    Vector a = {1,2,3};
+    Vector b = {3,4,5};
+    Matrix d = Linalg::diag(b);
+
+    Vector observed = dmatrix_vector_product(b,a);
+    Vector expected = matrix_vector_product(d,a);
+    CHECK(observed == expected);
+
+    observed = vector_matrix_product(a,d);
+    CHECK(observed == expected);
+
+}
+
 // TEST(Matrix, MatrixSlicing) {
 //     Linalg::Matrix m1 = {{1, 2, 3, 4}, {1, 2, 3, 4}};
 
