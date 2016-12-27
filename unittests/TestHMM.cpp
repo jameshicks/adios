@@ -52,3 +52,28 @@ TEST(HiddenMarkov, ForwardsBackwards)
 //     CHECK(o == pred_states);
 
 // }
+
+TEST(HiddenMarkov, WorkedExample) {
+    // From: 
+    // Stuart Russell and Peter Norvig (2010). 
+    // Artificial Intelligence A Modern Approach 3rd Edition
+    // via wikipedia.
+
+    using namespace Linalg;
+
+    // Note: I've been keeping all my matrices transposed because I guess I 
+    // like making  extra work for myself.
+    Matrix T = {{0.7, 0.3}, {0.3, 0.7}};
+    Matrix P = {{0.9, 0.2}, {0.1, 0.8}};
+    std::vector<int> obs = {0,0,1,0,0};
+
+    std::vector<Matrix*> obsmats(obs.size(), &P);
+    GenotypeHMM hmmfwbw(obs, obsmats, T);
+    auto pred_states = hmmfwbw.decode(false);
+
+    std::vector<int> expected = {0,0,1,0,0};
+    CHECK(pred_states == expected);
+
+
+
+}
