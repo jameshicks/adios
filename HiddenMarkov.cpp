@@ -34,17 +34,17 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
     Vector col(nstate); 
     Matrix A(nstate, nstate);
 
-    for (size_t obsidx = 0; obsidx < nobs; ++obsidx) {
-        int obs = observations[obsidx];
-        const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : *(emission_matrices[obsidx-1]);
-        auto fwcv = fwmat.col_view(obsidx);
+    for (size_t obsidx = 1; obsidx < (nobs+1); ++obsidx) {
+        int obs = observations[obsidx-1];
+        const Matrix& cur_obs_probs = *(emission_matrices[obsidx-1]);
+        auto fwcv = fwmat.col_view(obsidx-1);
 
         auto d = cur_obs_probs.row_view(obs);
         Linalg::matrix_dmatrix_product(transition_matrix, d, &A);
 
         vector_matrix_product(fwcv, A, &col);
         col /= col.sum(); // Normalize column
-        fwmat.set_column(obsidx + 1, col);
+        fwmat.set_column(obsidx, col);
 
     }
 
@@ -54,7 +54,7 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
     for (int obsidx=nobs; obsidx>0; obsidx--) 
     {
 
-        const Matrix& cur_obs_probs = (obsidx == 0) ? first_emiss : *(emission_matrices.at(obsidx-1));
+        const Matrix& cur_obs_probs = *(emission_matrices[obsidx-1]);
         auto bwrv = bwmat.col_view(obsidx);
 
         auto d = cur_obs_probs.row_view(observations[obsidx - 1]);
@@ -66,10 +66,9 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
         bwmat.set_column(obsidx - 1, col);
     }
 
-
     Matrix prob_mat = Linalg::direct_product(fwmat, bwmat);
 
-// Normalize columns once more
+    // Normalize columns once more
     for (size_t i = 0; i < prob_mat.ncol; ++i) {
         auto colv = prob_mat.col_view(i);
         double s = colv.sum();
@@ -77,6 +76,7 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
             colv.set(j, colv.get(j) / s);
         }
     }
+
 
     Vector states = prob_mat.argmax_col();
     for (size_t i = 1; i < states.size; ++i) {outp[i - 1] = states.get(i); }
