@@ -41,11 +41,9 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
         auto fw = fwmat.col_view(obsidx-1);
 
         auto d = cur_obs_probs.row_view(obs);
-        
-        // Linalg::dmatrix_vector_product(d, fw, &v);
-        // Linalg::vector_matrix_product(v, transition_matrix, &col);
-        Linalg::matrix_dmatrix_product(transition_matrix, d, &A);
-        vector_matrix_product(fw, A, &col);
+
+        vector_matrix_product(fw, transition_matrix, &v);
+        dmatrix_vector_product(d, v, &col);
 
         col /= col.sum(); // Normalize column
         fwmat.set_column(obsidx, col);
