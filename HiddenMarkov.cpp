@@ -32,17 +32,21 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
 
     // Temporary variables that we're gonna keep using to avoid constantly malloc/freeing new ones
     Vector col(nstate); 
+    Vector v(nstate);
     Matrix A(nstate, nstate);
 
     for (size_t obsidx = 1; obsidx < (nobs+1); ++obsidx) {
         int obs = observations[obsidx-1];
         const Matrix& cur_obs_probs = *(emission_matrices[obsidx-1]);
-        auto fwcv = fwmat.col_view(obsidx-1);
+        auto fw = fwmat.col_view(obsidx-1);
 
         auto d = cur_obs_probs.row_view(obs);
+        
+        // Linalg::dmatrix_vector_product(d, fw, &v);
+        // Linalg::vector_matrix_product(v, transition_matrix, &col);
         Linalg::matrix_dmatrix_product(transition_matrix, d, &A);
+        vector_matrix_product(fw, A, &col);
 
-        vector_matrix_product(fwcv, A, &col);
         col /= col.sum(); // Normalize column
         fwmat.set_column(obsidx, col);
 
@@ -55,19 +59,19 @@ std::vector<int> GenotypeHMM::forwards_backwards(void) const
     {
 
         const Matrix& cur_obs_probs = *(emission_matrices[obsidx-1]);
-        auto bwrv = bwmat.col_view(obsidx);
+        auto bw = bwmat.col_view(obsidx);
 
         auto d = cur_obs_probs.row_view(observations[obsidx - 1]);
-        Linalg::matrix_dmatrix_product(transition_matrix, d, &A);
-
-        Linalg::matrix_vector_product(A, bwrv, &col);
+        
+        Linalg::dmatrix_vector_product(d, bw, &v);
+        Linalg::matrix_vector_product(transition_matrix, v, &col);
+        
         col /= col.sum(); // Normalize again;
 
         bwmat.set_column(obsidx - 1, col);
     }
 
     Matrix prob_mat = Linalg::direct_product(fwmat, bwmat);
-
     // Normalize columns once more
     for (size_t i = 0; i < prob_mat.ncol; ++i) {
         auto colv = prob_mat.col_view(i);
