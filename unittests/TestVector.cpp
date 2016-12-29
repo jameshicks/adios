@@ -61,6 +61,16 @@ TEST(Vector, VectorMinMax) {
 
 };
 
+TEST(Vector, Swap) {
+    using Linalg::Vector;
+    Vector a = {1,2,3};
+    Vector b = {3,2,1};
+
+    b.swap(a);
+    CHECK((a == Vector{3,2,1}));
+    CHECK((b == Vector{1,2,3}));
+}
+
 TEST(Vector, VectorApply) {
     Linalg::Vector v{10, 100, 1000};
     Linalg::Vector expected{1, 2, 3};
