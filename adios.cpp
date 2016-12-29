@@ -156,10 +156,10 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
 
     int current_position = 0;
     do {
-        cur_vars[0] = cur_idx[0] > hapa.size() ? max_pos : hapa[cur_idx[0]];
-        cur_vars[1] = cur_idx[1] > hapb.size() ? max_pos : hapb[cur_idx[1]];
-        cur_vars[2] = cur_idx[2] > hapc.size() ? max_pos : hapc[cur_idx[2]];
-        cur_vars[3] = cur_idx[3] > hapd.size() ? max_pos : hapd[cur_idx[3]];
+        cur_vars[0] = cur_idx[0] >= hapa.size() ? max_pos : hapa[cur_idx[0]];
+        cur_vars[1] = cur_idx[1] >= hapb.size() ? max_pos : hapb[cur_idx[1]];
+        cur_vars[2] = cur_idx[2] >= hapc.size() ? max_pos : hapc[cur_idx[2]];
+        cur_vars[3] = cur_idx[3] >= hapd.size() ? max_pos : hapd[cur_idx[3]];
         
         int current_position = *(std::min_element(cur_vars.begin(), 
                                                   cur_vars.end()));
