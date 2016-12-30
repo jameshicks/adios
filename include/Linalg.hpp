@@ -80,6 +80,7 @@ struct Vector : public Vectorlike {
   Vector(size_t sz);
   Vector(const std::initializer_list<double> v);
   Vector(const std::vector<double> v);
+  Vector(size_t sz, double val); 
   Vector(const VectorView& vv); // move constructor
   Vector(Vector& v); // copy constructor
   Vector(Vector&& v);

@@ -72,7 +72,6 @@ void Vector::create_data_array(size_t sz)
 
 void Vector::swap(Vector& v)
 {
-    // using std::swap;
     std::swap(data, v.data);
     std::swap(size, v.size);
 }
@@ -80,6 +79,11 @@ void Vector::swap(Vector& v)
 Vector::Vector(size_t sz) : Vectorlike(sz,1)
 {
     create_data_array(sz);
+}
+
+Vector::Vector(size_t sz, double val) : Vectorlike(sz, 1) {
+    create_data_array(sz);
+    set_all(val);
 }
 
 Vector::Vector(const std::initializer_list<double> v) : Vectorlike(v.size(), 1)
