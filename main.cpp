@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         //                  Argument           Action       Default               narg  help string
         CommandLineArgument{"vcf",               "store",     {""},               1,    "VCF input file"},
         CommandLineArgument{"vcf_freq",          "store",     {"AF"},             1,    "VCF INFO field containing allele frequency"},
-        CommandLineArgument{"out",               "store",     {"-"},              1,    "Write output to file"},    
+        CommandLineArgument{"out",               "store",     {"-"},              1,    "Write output to file"},
         CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},             0,    "Calculate allele frequencies from data"},
         CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},             0,    "Include singleton variants from dataset"},
         CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},             0,    "Include monomorphic positions in dataset"},
@@ -82,19 +82,20 @@ int main(int argc, char** argv) {
     cout << "Minimum segment LOD: " << params.min_lod << '\n';
     cout << "Minimum segment length: " << bp_formatter(params.min_length) << '\n';
     cout << "Minimum markers to declare IBD: " << params.min_mark << '\n';
-    cout << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)"<< '\n';
+    cout << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)" << '\n';
     cout << "Decoding: " << (params.viterbi ? "MAP" : "ML") << '\n';
     cout << endl;
 
-    VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0), 
-                      !(args["keep_monomorphic"][0].compare("YES") == 0), 
-                      empirical_freqs, 
-                      args["vcf_freq"][0]};
+    VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0),
+                      !(args["keep_monomorphic"][0].compare("YES") == 0),
+                      empirical_freqs,
+                      args["vcf_freq"][0]
+                     };
 
 
     auto start = std::chrono::steady_clock::now();
     Dataset data;
-    try {   
+    try {
         data = read_vcf(args["vcf"][0], vcfp);
     } catch (const std::invalid_argument& e) {
         std::cerr << "Could not open file: " << args["vcf"][0] << std::endl;
@@ -111,10 +112,10 @@ int main(int argc, char** argv) {
     data.floor_frequencies(std::stod(args["freq_floor"][0]));
     auto end = std::chrono::steady_clock::now();
     double elapsedSeconds = ((end - start).count()) * std::chrono::steady_clock::period::num / static_cast<double>(std::chrono::steady_clock::period::den);
-    
+
     size_t nmark_total = data.nmark() + data.nexcluded();
     std::cout << "Processed " << nmark_total << " variants ";
-    std::cout << "in " << elapsedSeconds << "s "; 
+    std::cout << "in " << elapsedSeconds << "s ";
     std::cout << "(" << (nmark_total / elapsedSeconds) << " variants/sec)\n\n";
 
     std::cout << data.ninds() << " individuals" << std::endl;
