@@ -48,14 +48,6 @@ int main(int argc, char** argv) {
 
     parser.update_args(rawargs);
 
-    std::vector<std::string> errors = parser.validate_args();
-
-    if (!errors.empty()) {
-        for (auto e : errors) {
-            std::cerr << e << '\n';
-        }
-        return 64;
-    }
 
     if (parser.has_arg("version")) {
         std::cout << "adios v0.8" << std::endl << std::endl;
@@ -65,6 +57,15 @@ int main(int argc, char** argv) {
     if (parser.has_arg("help")) {
         parser.print_help();
         return 0;
+    }
+
+    std::vector<std::string> errors = parser.validate_args();
+
+    if (!errors.empty()) {
+        for (auto e : errors) {
+            std::cerr << e << '\n';
+        }
+        return 64;
     }
 
     auto args = parser.args;
