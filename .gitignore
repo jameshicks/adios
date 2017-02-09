@@ -8,4 +8,5 @@ unittests/unittester
 autom4te.cache/
 config.h
 config.log
-config.status   
+config.status  
+Makefile 
