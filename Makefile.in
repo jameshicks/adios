@@ -1,14 +1,16 @@
-EXEC = adios
+EXEC =adios
+CXX=@CXX@
 # add -Wc++98-compat-pedantic to warn on c++11 features
 WARN_FLAGS = -Wno-unused-parameter -Wunused-function -Wextra -Wall -pedantic-errors -Wunreachable-code
-OPTIMIZATION_FLAGS = -march=native -O3 -funroll-loops  
-CXXFLAGS = -std=c++11  -g 
+OPTIMIZATION_FLAGS = -march=native -O3 -funroll-loops 
+CXXFLAGS = -std=c++11 @CXXFLAGS@
 CXXFLAGS += $(OPTIMIZATION_FLAGS) $(WARN_FLAGS) 
-INCLUDES = -Iinclude
+INCLUDES = -Iinclude 
 COMMON_SOURCES = ArgumentParser.cpp FileIOManager.cpp HiddenMarkov.cpp Linalg.cpp adios.cpp combinatorics.cpp utility.cpp datamodel.cpp setops.cpp stringops.cpp vcf.cpp
 COMMON_OBJECTS = $(COMMON_SOURCES:.cpp=.o)
 
-LDFLAGS = -lm
+LDFLAGS=@LDFLAGS@
+LIBS=@LIBS@
 
 UNITTEST_SOURCES = $(wildcard unittests/*.cpp)
 UNITTEST_OBJECTS = $(UNITTEST_SOURCES:.cpp=.o)
@@ -24,7 +26,7 @@ all: $(EXEC)
 
 $(EXEC): $(COMMON_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c main.cpp -o main.o
-	$(CXX) main.o $(COMMON_OBJECTS) -o $(EXEC) $(LDFLAGS) 
+	$(CXX) main.o $(COMMON_OBJECTS) -o $(EXEC) $(LDFLAGS) $(LIBS)
 
 $(COMMON_OBJECTS): %.o: %.cpp 
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@

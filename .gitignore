@@ -5,3 +5,7 @@ support/*
 adios
 unittests/unittester
 
+autom4te.cache/
+config.h
+config.log
+config.status   

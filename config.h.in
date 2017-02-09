@@ -1,0 +1,7 @@
+#ifndef CONFIGURATION_HEADER
+#define CONFIGURATION_HEADER
+
+#undef HAVE_ZLIB
+#undef HAVE_OPENMP
+
+#endif

@@ -1,9 +1,7 @@
 #include "adios.hpp"
 
-namespace adios
-{
-Matrix unphased_transition_matrix(int l10gamma, int l10rho)
-{
+namespace adios {
+Matrix unphased_transition_matrix(int l10gamma, int l10rho) {
     const double gamma = pow(10, -l10gamma);
     const double rho   = pow(10, -l10rho);
     const double gamma_2 = pow(gamma, 2);
@@ -17,8 +15,7 @@ Matrix unphased_transition_matrix(int l10gamma, int l10rho)
     return t;
 }
 
-Matrix unphased_genotype_error_matrix(double eps)
-{
+Matrix unphased_genotype_error_matrix(double eps) {
     const double eta = 1 - eps;
 
     const double eta_sq = pow(eta, 2);
@@ -34,8 +31,7 @@ Matrix unphased_genotype_error_matrix(double eps)
     return outp;
 }
 
-Matrix unphased_emission_matrix(double q)
-{
+Matrix unphased_emission_matrix(double q) {
     Matrix mat(9, 3);
 
     const double p = 1 - q;
@@ -63,8 +59,7 @@ Matrix unphased_emission_matrix(double q)
 }
 
 
-adios_parameters params_from_args(std::map<std::string, std::vector<std::string>> args)
-{
+adios_parameters params_from_args(std::map<std::string, std::vector<std::string>> args) {
     using std::stod;
     using std::stoi;
     adios_parameters params;
@@ -95,8 +90,7 @@ adios_parameters params_from_args(std::map<std::string, std::vector<std::string>
 
 }
 
-void adios_parameters::get_rare_sites(Dataset& data)
-{
+void adios_parameters::get_rare_sites(Dataset& data) {
     for (size_t chridx = 0; chridx < data.nchrom(); ++chridx) {
         std::shared_ptr<ChromInfo> chrom = data.chromosomes[chridx];
         std::vector<int> rares;
@@ -127,9 +121,9 @@ void adios_parameters::calculate_emission_mats(const Dataset& data) {
 
 
 adios_sites find_informative_sites_unphased(const Indptr& ind1,
-                                            const Indptr& ind2,
-                                            const int chromidx,
-                                            const std::vector<int>& rares) {
+        const Indptr& ind2,
+        const int chromidx,
+        const std::vector<int>& rares) {
     auto chromobj = ind1->chromosomes[chromidx]->info;
     int max_pos = chromobj->positions.back() + 100;
 
@@ -138,17 +132,17 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
     auto hapc = ind2->chromosomes[chromidx]->hapa;
     auto hapd = ind2->chromosomes[chromidx]->hapb;
 
-    std::vector<int> cur_idx = {0,0,0,0};
-    std::vector<int> cur_vars = {0,0,0,0};
+    std::vector<int> cur_idx = {0, 0, 0, 0};
+    std::vector<int> cur_vars = {0, 0, 0, 0};
     int rareidx = 0;
     int nrare = rares.size();
-    
+
     const int nmark = chromobj->nmark();
 
     std::vector<int> informatives;
     std::vector<int> states;
 
-    // You cant know ahead of time how many sites are going to be useful 
+    // You cant know ahead of time how many sites are going to be useful
     // but in my experience it's less than 5%
     const int reserve_amount = (int)(0.05 * nmark);
     informatives.reserve(reserve_amount);
@@ -160,19 +154,19 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
         cur_vars[1] = cur_idx[1] >= hapb.size() ? max_pos : hapb[cur_idx[1]];
         cur_vars[2] = cur_idx[2] >= hapc.size() ? max_pos : hapc[cur_idx[2]];
         cur_vars[3] = cur_idx[3] >= hapd.size() ? max_pos : hapd[cur_idx[3]];
-        
-        int current_position = *(std::min_element(cur_vars.begin(), 
-                                                  cur_vars.end()));
+
+        int current_position = *(std::min_element(cur_vars.begin(),
+                                 cur_vars.end()));
 
         if (current_position == max_pos) break;
 
         while (rareidx < nrare && rares[rareidx] < current_position) { rareidx++; }
         bool is_rare = current_position == rares[rareidx];
 
-        int s1 = (cur_vars[0] == current_position) + (cur_vars[1] == current_position); 
+        int s1 = (cur_vars[0] == current_position) + (cur_vars[1] == current_position);
         int s2 = (cur_vars[2] == current_position) + (cur_vars[3] == current_position);
         int state = 3 * s1 + s2;
-        
+
         if (state == 2 || state == 6 || is_rare) {
             informatives.push_back(current_position);
             states.push_back(state);
@@ -182,51 +176,61 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
             if (cur_vars[i] == current_position) cur_idx[i]++;
         }
 
-    
+
 
     } while (current_position != max_pos);
 
     return make_pair(states, informatives);
-    
+
 }
 
 
 
-void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
-{
+void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out) {
     std::vector<Indptr> inds;
     for (auto pr = d.individuals.begin(); pr != d.individuals.end(); ++pr) { inds.push_back(pr->second);}
 
-        std::vector<std::string> header = {
-            "IND_1", "IND_2", "CHROM", "START", "END", "LENGTH",
-            "STATE", "NMARK", "NRARE", "NERR", "LOD"
-        };
-        out.writetoks(header);
-        std::vector<Indptr_pair> pairs = combinatorics::pair_combinations(inds);
-    
+    std::vector<std::string> header = {
+        "IND_1", "IND_2", "CHROM", "START", "END", "LENGTH",
+        "STATE", "NMARK", "NRARE", "NERR", "LOD"
+    };
+    out.writetoks(header);
+    std::vector<Indptr_pair> pairs = combinatorics::pair_combinations(inds);
+
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
-        
-        double signpost = 0.0; double signpost_step = 0.01; 
+        double signpost = 0.0; double signpost_step = 0.01;
+
+        // If openmp is available, this is the loop we want to parallelize.
+        // This gives each thread a set of individual pairs to compute.
+        #pragma omp parallel for
         for (size_t pairidx = 0; pairidx < pairs.size(); ++pairidx) {
             Indptr_pair pair = pairs[pairidx];
+            std::vector<Segment> segs = adios_pair_unphased(pair, chridx, params);
 
-            double progress = pairidx / (double)(pairs.size());
-            if (progress > signpost) {
-                if (!out.is_stdout()) std::cout << sfloat(progress * 100, 1) << '%' << "..." << std::endl;
-                while (progress > signpost) signpost += signpost_step;
+            #pragma omp critical
+            {
+                // File IO needs to be locked. This block is OMP critical
+                // to prevent output (both to stdout and file) from being 
+                // garbled.
+                for (Segment s : segs) out.writetoks(s.record());
+                
+                completed++;
+                double progress = (double)completed / (double)(pairs.size());
+                if (progress > signpost) {
+                    if (!out.is_stdout()) std::cout << sfloat(progress * 100, 1) << '%' << "..." << std::endl;
+                    while (progress > signpost) signpost += signpost_step;
+                }
+
             }
 
-            std::vector<Segment> segs = adios_pair_unphased(pair, chridx, params);  
-            for (Segment s : segs) out.writetoks(s.record());
         }
     }
 }
 
 
 std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
-                int chromidx,
-                const adios_parameters& params)
-{
+        int chromidx,
+        const adios_parameters& params) {
     using Linalg::Matrix;
 
     Indptr ind1 = inds.first;
@@ -235,9 +239,9 @@ std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
     auto chromobj = ind1->chromosomes[chromidx]->info;
 
     auto useful = find_informative_sites_unphased(ind1,
-                                                  ind2,
-                                                  chromidx,
-                                                  params.rare_sites[chromidx]);
+                  ind2,
+                  chromidx,
+                  params.rare_sites[chromidx]);
 
     auto observations = useful.first;
     std::vector<int> informative_sites(useful.second.begin(), useful.second.end());
@@ -278,8 +282,7 @@ Segment::Segment(Indptr a,
                  std::vector<int>& obs,
                  std::vector<Matrix*>& emissions,
                  std::vector<int>& adiossites,
-                 const adios_parameters& params)
-{
+                 const adios_parameters& params) {
 
     ind1 = a;
     ind2 = b;
@@ -298,16 +301,15 @@ Segment::Segment(Indptr a,
 
     nerr = 0;
     nrare = 0;
-    for (size_t i = start; i<=stop; ++i) {
+    for (size_t i = start; i <= stop; ++i) {
         nerr += (int)(obs[i] == 2 || obs[i] == 6);
-        nrare += (int)(is_shared_rv(obs[i])); 
+        nrare += (int)(is_shared_rv(obs[i]));
     }
 
 }
 
 
-void Segment::trim(std::vector<int>& observations)
-{
+void Segment::trim(std::vector<int>& observations) {
     // return;
     using adios::is_shared_rv;
     while (!is_shared_rv(observations[stop])) {
@@ -324,8 +326,7 @@ void Segment::trim(std::vector<int>& observations)
 
 double Segment::calculate_lod(std::vector<int>& observations,
                               std::vector<Matrix*>& emissions,
-                              const adios::adios_parameters& params) const
-{
+                              const adios::adios_parameters& params) const {
     using std::log10;
     if (start >= stop) { return -1e99; }
     // Transition probs for entering and exiting a state
@@ -351,8 +352,7 @@ double Segment::calculate_lod(std::vector<int>& observations,
 }
 
 
-bool Segment::passes_filters(const adios::adios_parameters& params) const
-{
+bool Segment::passes_filters(const adios::adios_parameters& params) const {
     return ((length() >= params.min_length) &&
             (nrare >= params.min_mark) &&
             (lod >= params.min_lod));
@@ -360,7 +360,7 @@ bool Segment::passes_filters(const adios::adios_parameters& params) const
 }
 
 std::vector<std::string> Segment::record(void) const {
-        using std::to_string;
+    using std::to_string;
 
     std::vector<std::string> s = {
         ind1->label,
@@ -378,8 +378,7 @@ std::vector<std::string> Segment::record(void) const {
     return s;
 }
 
-std::string Segment::record_string(void) const
-{
+std::string Segment::record_string(void) const {
 
     std::stringstream s;
     s << ind1->label << '\t';

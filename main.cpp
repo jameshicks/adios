@@ -5,6 +5,14 @@
 #include <memory>
 #include <stdexcept>
 #include <chrono>
+#include <stdlib.h>
+
+#include "config.h"
+
+#ifdef HAVE_OPENMP
+#include <omp.h>
+#endif
+
 #include "vcf.hpp"
 #include "adios.hpp"
 #include "ArgumentParser.hpp"
@@ -40,6 +48,7 @@ int main(int argc, char** argv) {
         CommandLineArgument{"minmark",           "store",     {"16"},             1,    "Minimum number of shared rare variants to report an IBD segment"},
         CommandLineArgument{"err",               "store",     {"0.001", "0.005"}, 2,    "Allele error rates (rare, common)"},
         CommandLineArgument{"transition",        "store",     {"6", "3"},         2,    "IBD entrance/exit penalty: P(Transition) = 10^(-x))"},
+        CommandLineArgument{"threads",           "store",     {"1"},              1,    "Number of threads"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
         CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
         CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"}
@@ -67,12 +76,28 @@ int main(int argc, char** argv) {
         }
         return 64;
     }
-
     auto args = parser.args;
+
+    // int nthreads = 1;
+    int nthreads = atoi(args["threads"][0].c_str());
+
+
     bool empirical_freqs = (args["empirical_freqs"][0].compare("YES") == 0);
 
+    cout << "adios v0.8" << std::endl << std::endl;
 
-    std::cout << "adios v0.8" << std::endl << std::endl;
+
+#ifdef HAVE_OPENMP
+    omp_set_num_threads(nthreads);
+#else
+    if (nthreads != 1) {
+        cout << '\n';
+        cout << "adios was not compiled with multithreading support\n";
+        cout << "Defaulting to single threading\n";
+        cout << '\n';
+    }
+#endif
+
 
     adios::adios_parameters params = adios::params_from_args(args);
 
@@ -85,6 +110,10 @@ int main(int argc, char** argv) {
     cout << "Minimum markers to declare IBD: " << params.min_mark << '\n';
     cout << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)" << '\n';
     cout << "Decoding: " << (params.viterbi ? "MAP" : "ML") << '\n';
+#ifdef HAVE_OPENMP
+    cout << "Threads: " << nthreads << '\n';
+#endif
+
     cout << endl;
 
     VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0),
