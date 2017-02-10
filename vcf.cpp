@@ -220,7 +220,7 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
             }
             break;
         } else {
-            std::cout << "No header line??" << std::endl;
+            throw std::invalid_argument("No header line??");
         }
     }
 
