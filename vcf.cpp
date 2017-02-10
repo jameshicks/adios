@@ -1,42 +1,49 @@
+#include "config.h"
+
 #include "vcf.hpp"
 
 // VCF Parsing
 
-VCFRecordGenotypeContainer::VCFRecordGenotypeContainer(size_t n) {
+VCFRecordGenotypeContainer::VCFRecordGenotypeContainer(size_t n)
+{
     ninds = n;
     alts.reserve(2 * ninds);
     missing.reserve(ninds);
 }
 
-double VCFRecordGenotypeContainer::allele_frequency(void) const {
+double VCFRecordGenotypeContainer::allele_frequency(void) const
+{
     return alts.size() / (double)(2 * (ninds - missing.size()));
 }
 
-void VCFRecordGenotypeContainer::invert(void) {
+void VCFRecordGenotypeContainer::invert(void)
+{
     std::vector<size_t> skips;
-    std::set_union(missing.begin(), missing.end(), 
-                   alts.begin(), alts.end(), 
+    std::set_union(missing.begin(), missing.end(),
+                   alts.begin(), alts.end(),
                    std::back_inserter(skips));
-    
+
     alts.clear();
 
     std::vector<size_t> new_alts;
-    for (size_t i = 0; i<2*ninds; i++) { new_alts.push_back(i); }
+    for (size_t i = 0; i < 2 * ninds; i++) { new_alts.push_back(i); }
 
-    std::set_difference(new_alts.begin(), new_alts.end(), 
-                        skips.begin(), skips.end(), 
+    std::set_difference(new_alts.begin(), new_alts.end(),
+                        skips.begin(), skips.end(),
                         std::back_inserter(alts));
 
 }
 
-double VCFRecord::get_info_freq(const std::string& info_field) {
+double VCFRecord::get_info_freq(const std::string& info_field)
+{
     std::string val = get_info_by_key(info_field.c_str());
-    if (val.empty()) freq = 0.0;
+    if (val.empty()) { freq = 0.0; }
     freq = atof(val.c_str());
     return freq;
 }
 
-std::string VCFRecord::get_info_by_key(const char* key) {
+std::string VCFRecord::get_info_by_key(const char* key)
+{
     size_t keylen = strlen(key);
     std::string retval("");
     char* orig_infodup = strdup(infostr.c_str());
@@ -62,7 +69,8 @@ std::string VCFRecord::get_info_by_key(const char* key) {
     return retval;
 }
 
-VCFRecord::VCFRecord(const std::string& vcfline)  {
+VCFRecord::VCFRecord(const std::string& vcfline)
+{
     using stringops::split;
     using std::string;
 
@@ -110,7 +118,8 @@ VCFRecord::VCFRecord(const std::string& vcfline)  {
     freq = 0.0;
 }
 
-std::map<std::string, std::string> VCFRecord::infomap(void) const {
+std::map<std::string, std::string> VCFRecord::infomap(void) const
+{
     // Make the info map
 
     using stringops::split;
@@ -132,11 +141,12 @@ std::map<std::string, std::string> VCFRecord::infomap(void) const {
     return info;
 }
 
-void VCFRecord::get_minor_alleles(VCFRecordGenotypeContainer& con) const {
+void VCFRecord::get_minor_alleles(VCFRecordGenotypeContainer& con) const
+{
     int gtidx = 0;
     auto gtfpos = format.find("GT");
     for (size_t i = 0; i < gtfpos; ++i) {
-        if (format[i] == ':') gtidx++;
+        if (format[i] == ':') { gtidx++; }
     }
 
     char* original_data_pointer = strdup(data.c_str());
@@ -185,11 +195,13 @@ void VCFRecord::get_minor_alleles(VCFRecordGenotypeContainer& con) const {
 
 }
 
-int VCFRecord::nalleles(void) const {
+int VCFRecord::nalleles(void) const
+{
     return alleles.size();
 }
 
-bool VCFRecord::is_snv(void) const {
+bool VCFRecord::is_snv(void) const
+{
     for (int i = 0; i < nalleles(); ++i) {
         if (alleles[i].length() > 2) {
             return false;
@@ -198,13 +210,26 @@ bool VCFRecord::is_snv(void) const {
     return true;
 }
 
-Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
+Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
+{
     using stringops::split;
+    using stringops::endswith;
     using std::vector;
 
 
     Dataset data;
-    FileReader vcffile(filename);
+    
+#ifdef HAVE_ZLIB
+     FileReader vcffile = endswith(filename, ".gz") ? GZFileReader(filename) : FileReader(filename);
+#else
+    if (endswith(filename, ".gz")) {
+        std::cerr << "Adios not compiled with gzip support\n";
+        exit(1);
+    }
+    
+    FileReader vcffile = FileReader(filename);
+
+#endif
 
     std::vector<std::string> indlabs;
     std::string line;
@@ -237,14 +262,14 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
     while (vcffile.good()) {
         line = vcffile.getline();
 
-        if (!line.length()) continue;
+        if (!line.length()) { continue; }
         VCFRecord rec(line);
         con.clear();
 
         if (rec.chrom.compare(last_chromid)) {
-            if (chromidx >-1 && (data.chromosomes[chromidx]->nmark()==0)) {
+            if (chromidx > -1 && (data.chromosomes[chromidx]->nmark() == 0)) {
                 data.chromosomes[chromidx]->label = rec.chrom;
-            } else { 
+            } else {
                 data.add_chromosome(rec.chrom);
                 chromidx++;
             }
@@ -281,7 +306,7 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
 
         if (fq > 0.5) {
             con.invert();
-            fq = 1-fq;
+            fq = 1 - fq;
         }
 
         data.chromosomes[chromidx]->add_variant(rec.label, rec.pos, fq);

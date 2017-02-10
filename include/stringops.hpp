@@ -12,6 +12,7 @@
 
 namespace stringops {
     using std::string;
+    bool endswith(const string& s, const string& suffix);
     string join(const std::vector<string>& v, const string& delim);
     std::vector<string> split(const string& s, const char* delim, int nsplit=-1);
     bool startswith(const string& s, const string& start);

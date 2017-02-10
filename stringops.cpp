@@ -1,6 +1,10 @@
 #include "stringops.hpp"
 namespace stringops {
 
+bool endswith(const std::string& s, const std::string& suffix) {
+    return s.size() >= suffix.size() &&
+           s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
 
 std::vector<string> split(const string& s, const char* delims, int nsplit) {
     std::vector<string> outp;

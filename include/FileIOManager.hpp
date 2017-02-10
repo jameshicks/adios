@@ -8,26 +8,58 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+
+#include "config.h"
+
+#ifdef HAVE_ZLIB
+#include "zlib.h"
+#endif
+
 #define READBUF_SIZE 10000
 
-class CFileWrapper {
+class CFileWrapper
+{
 public:
-    FILE* f;
+    FILE* f = NULL;
     std::string filename;
-    ~CFileWrapper(void);    
-    void openfile(const std::string& filename, bool write);
-    void closefile(void);
-    inline bool good(void) { return !(feof(f) || ferror(f)); }
-    inline bool eof(void) { return feof(f); }
+    ~CFileWrapper(void);
+    virtual void openfile(const std::string& filename, bool write);
+    virtual void closefile(void);
+    virtual bool good(void);
+    virtual bool eof(void);
 };
 
-class FileReader : public CFileWrapper {
+class FileReader : public CFileWrapper
+{
 public:
+    FileReader(void) { return; }
     FileReader(const std::string& fn);
     std::string getline(void);
 };
 
-class DelimitedFileWriter : public CFileWrapper {
+#ifdef HAVE_ZLIB
+
+class GZFileReader : public FileReader
+{
+
+private:
+    gzFile gzf;
+public:
+    GZFileReader(const std::string& filename);
+    void openfile(const std::string& filename, bool write);
+    void closefile(void);
+    std::string getline(void);
+    
+    bool good(void);
+
+    bool eof(void);
+};
+
+
+#endif
+
+class DelimitedFileWriter : public CFileWrapper
+{
 private:
     void write(const std::string& s);
     void write(char v);

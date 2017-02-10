@@ -15,7 +15,6 @@
 #include <iterator>
 #include <algorithm>
 
-
 #include "utility.hpp"
 #include "stringops.hpp"
 #include "datamodel.hpp"
