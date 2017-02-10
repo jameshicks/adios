@@ -127,8 +127,8 @@ int main(int argc, char** argv) {
     Dataset data;
     try {
         data = read_vcf(args["vcf"][0], vcfp);
-    } catch (const std::invalid_argument& e) {
-        std::cerr << "Could not open file: " << args["vcf"][0] << ": ";
+    } catch (const std::exception& e) {
+        std::cerr << "Could not process file: " << args["vcf"][0] << ": ";
         std::cerr << e.what() << std::endl;
         return 1;
     }

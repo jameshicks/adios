@@ -218,23 +218,40 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
 
 
     Dataset data;
-    
+    UncompressedFileReader uncompressed;
+    FileReader* vcffile;
+
 #ifdef HAVE_ZLIB
-     FileReader vcffile = endswith(filename, ".gz") ? GZFileReader(filename) : FileReader(filename);
+
+    GZFileReader compressed;
+    bool gzmode =  false;
+    if (endswith(filename, ".gz")) {
+        gzmode=true;
+        compressed = GZFileReader(filename);
+        vcffile = &compressed;
+    } else {
+        uncompressed = UncompressedFileReader(filename);
+        vcffile = &uncompressed;
+    }
+
 #else
+
     if (endswith(filename, ".gz")) {
         std::cerr << "Adios not compiled with gzip support\n";
         exit(1);
     }
-    
-    FileReader vcffile = FileReader(filename);
+    uncompressed = UncompressedFileReader(filename);
+    vcffile = &uncompressed;
 
 #endif
 
+    std::cout << "opened good? " << vcffile->good() << '\n';
+
     std::vector<std::string> indlabs;
     std::string line;
-    while (vcffile.good()) {
-        line = vcffile.getline();
+    while (vcffile->good()) {
+        line = vcffile->getline();
+        std::cout << "line is: " << line <<'\n';
         if (stringops::startswith(line, "##")) {
             continue;
         } else if (stringops::startswith(line, "#")) {
@@ -259,8 +276,8 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
     int chromidx = -1;
     int markidx = 0;
     unsigned long rawidx = 0;
-    while (vcffile.good()) {
-        line = vcffile.getline();
+    while (vcffile->good()) {
+        line = vcffile->getline();
 
         if (!line.length()) { continue; }
         VCFRecord rec(line);
