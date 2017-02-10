@@ -199,7 +199,7 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
         double signpost = 0.0; double signpost_step = 0.01;
-
+        int completed = 0;
         // If openmp is available, this is the loop we want to parallelize.
         // This gives each thread a set of individual pairs to compute.
         #pragma omp parallel for
