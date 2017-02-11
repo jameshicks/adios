@@ -218,19 +218,19 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
 
 
     Dataset data;
-    UncompressedFileReader uncompressed;
-    FileReader* vcffile;
+    UncompressedFile uncompressed;
+    FileObject* vcffile;
 
 #ifdef HAVE_ZLIB
 
-    GZFileReader compressed;
-    bool gzmode =  false;
-    if (endswith(filename, ".gz")) {
-        gzmode=true;
-        compressed = GZFileReader(filename);
+    GZFile compressed;
+
+    bool gzmode = endswith(filename, ".gz");
+    if (gzmode) {
+        compressed.openfile(filename, false);
         vcffile = &compressed;
     } else {
-        uncompressed = UncompressedFileReader(filename);
+        uncompressed.openfile(filename, false);
         vcffile = &uncompressed;
     }
 
@@ -245,13 +245,12 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
 
 #endif
 
-    std::cout << "opened good? " << vcffile->good() << '\n';
 
     std::vector<std::string> indlabs;
     std::string line;
     while (vcffile->good()) {
         line = vcffile->getline();
-        std::cout << "line is: " << line <<'\n';
+
         if (stringops::startswith(line, "##")) {
             continue;
         } else if (stringops::startswith(line, "#")) {

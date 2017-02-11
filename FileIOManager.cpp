@@ -1,19 +1,25 @@
 #include "FileIOManager.hpp"
 
-bool CFileWrapper::good(void) { return !(feof(f) || ferror(f)); }
-bool CFileWrapper::eof(void) { return feof(f); }
+UncompressedFile::UncompressedFile(void) { return; }
 
-void CFileWrapper::openfile(const std::string& fn, bool write) {
+bool UncompressedFile::good(void) { return !(feof(f) || ferror(f)); }
+
+bool UncompressedFile::eof(void) { return feof(f); }
+
+void UncompressedFile::openfile(const std::string& fn, bool write)
+{
     filename = fn;
     f = (filename.compare("-") == 0) ? stdout : fopen(filename.c_str(), write ? "w" : "r");
 
-    if (f == NULL) throw std::invalid_argument("Couldn't open file: " + filename);
-    if (feof(f) || ferror(f)) std::cout << "issue here\n";
+    if ((f == NULL) || feof(f) || ferror(f)) {
+        throw std::invalid_argument("Couldn't open file: " + filename);
+    }
 }
 
-void CFileWrapper::closefile(void) {
+void UncompressedFile::closefile(void)
+{
 
-    if (f == stdout || !f) return; // Dont close stdout or noop if already closed
+    if (f == stdout || !f) { return; } // Dont close stdout or noop if already closed
     int r = fclose(f);
     if (r != 0) {
         puts(strerror(errno));
@@ -22,72 +28,76 @@ void CFileWrapper::closefile(void) {
     f = NULL;
 }
 
-CFileWrapper::~CFileWrapper(void) { closefile(); }
-
-UncompressedFileReader::UncompressedFileReader(void) { return; }
-UncompressedFileReader::UncompressedFileReader(const std::string& fn) {
-    openfile(fn, false);
+UncompressedFile::UncompressedFile(const std::string& filename)
+{
+    openfile(filename, false);
 }
 
-std::string UncompressedFileReader::getline(void) {
+UncompressedFile::~UncompressedFile(void)
+{
+    closefile();
+}
+
+std::string UncompressedFile::getline(void)
+{
     std::string line;
     char readbuf[READBUF_SIZE];
 
     size_t readlen = 0;
     while (fgets(readbuf, sizeof(readbuf), f) != NULL) {
         int e = ferror(f);
-        std::cout  << "Errcode: " << e << '\n';
+
         readlen = strlen(readbuf);
         line.append(readbuf);
-        if ((readbuf[readlen-1] == '\n') || !good()) { break; }
-    } 
-    std::cout << "never even made it in...\n";
+        if ((readbuf[readlen - 1] == '\n') || !good()) { break; }
+    }
     if (line.back() == '\n') { line.pop_back(); }
     return line;
 
 }
 
 #ifdef HAVE_ZLIB
-GZFileWrapper::GZFileWrapper(void) { return; }
+GZFile::GZFile(void) { return; }
+GZFile::GZFile(const std::string filename)
+{
+    openfile(filename, false);
+}
 
-
-void GZFileWrapper::openfile(const std::string& fn, bool write) {
+void GZFile::openfile(const std::string& fn, bool write)
+{
     filename = fn;
     gzf = gzopen(filename.c_str(), "r");
-    if (gzf == NULL) throw std::invalid_argument("Couldn't open file: " + filename);
+    if (gzf == NULL) { throw std::invalid_argument("Couldn't open file: " + filename); }
 }
 
-void GZFileWrapper::closefile(void) {
+void GZFile::closefile(void)
+{
     int success = gzclose(gzf);
-    if (success != Z_OK) throw std::runtime_error("Couldn't close file: " + filename);
+    if (success != Z_OK) { throw std::runtime_error("Couldn't close file: " + filename); }
 }
 
-bool GZFileWrapper::good(void){
+bool GZFile::good(void)
+{
     int errcode = 0;
     gzerror(gzf, &errcode);
     return !(eof() || (errcode != Z_OK));
 }
 
-bool GZFileWrapper::eof(void) { return gzeof(gzf); }
+bool GZFile::eof(void) { return gzeof(gzf); }
 
-GZFileReader::GZFileReader(void) { return; }
-
-GZFileReader::GZFileReader(const std::string& filename) {
-    openfile(filename, false);
-}
-
-std::string GZFileReader::getline(void) {
+std::string GZFile::getline(void)
+{
     std::string line;
     char readbuf[READBUF_SIZE];
     size_t readlen = 0;
-    
+
     while (gzgets(gzf, readbuf, sizeof(readbuf))) {
         readlen = strlen(readbuf);
         line.append(readbuf);
-        if ((readbuf[readlen-1] == '\n') || !good()) break;
-    } 
-    
-    if (line.back() == '\n') line.pop_back();
+        if ((readbuf[readlen - 1] == '\n') || !good()) { break; }
+    }
+
+    if (line.back() == '\n') { line.pop_back(); }
     return line;
 
 }
@@ -96,26 +106,30 @@ std::string GZFileReader::getline(void) {
 
 #endif
 
-DelimitedFileWriter::DelimitedFileWriter(const std::string& fn, char delimiter) { 
+DelimitedFileWriter::DelimitedFileWriter(const std::string& fn, char delimiter)
+{
     openfile(fn, true);
     delim = delimiter;
 }
 
-void DelimitedFileWriter::write(const std::string& s) {
+void DelimitedFileWriter::write(const std::string& s)
+{
     int res = 0;
     res = fputs(s.c_str(), f);
-    if (res == EOF) throw std::runtime_error("Couldn't write to file");
+    if (res == EOF) { throw std::runtime_error("Couldn't write to file"); }
 }
 
-void DelimitedFileWriter::write(char d) {
+void DelimitedFileWriter::write(char d)
+{
     int res = 0;
     res = fputc(d, f);
-    if (res == EOF) throw std::runtime_error("Couldn't write to file");
+    if (res == EOF) { throw std::runtime_error("Couldn't write to file"); }
 }
 
-void DelimitedFileWriter::writetoks(const std::vector<std::string>& toks) {
+void DelimitedFileWriter::writetoks(const std::vector<std::string>& toks)
+{
     for (size_t i = 0; i < toks.size(); ++i) {
         write(toks[i]);
-        write((i != toks.size()-1) ? delim : '\n');
+        write((i != toks.size() - 1) ? delim : '\n');
     }
 }
