@@ -127,6 +127,6 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 std::vector<Segment> adios_pair_unphased(const Indptr_pair& pair,
                          int chromidx,
                          const adios_parameters& params);
-};
+}
 
 #endif

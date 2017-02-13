@@ -62,7 +62,7 @@ VectorView::VectorView(double* d, size_t sz, size_t strd) : Vectorlike(sz, strd)
 
 {
     data=d;
-};
+}
 
 // Vector
 void Vector::create_data_array(size_t sz)
