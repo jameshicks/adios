@@ -36,9 +36,8 @@ int main(int argc, char** argv) {
     std::vector<CommandLineArgument> arginfo = {
         //                  Argument           Action       Default               narg  help string
         CommandLineArgument{"vcf",               "store",     {""},               1,    "VCF input file"},
-        CommandLineArgument{"vcf_freq",          "store",     {"AF"},             1,    "VCF INFO field containing allele frequency"},
+        CommandLineArgument{"vcf_freq",          "store",     {"-"},              1,    "VCF INFO field containing allele frequency"},
         CommandLineArgument{"out",               "store",     {"-"},              1,    "Write output to file"},
-        CommandLineArgument{"empirical_freqs",   "store_yes", {"NO"},             0,    "Calculate allele frequencies from data"},
         CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},             0,    "Include singleton variants from dataset"},
         CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},             0,    "Include monomorphic positions in dataset"},
         CommandLineArgument{"rare",              "store",     {"0.05"},           1,    "Rare frequency threshold"},
@@ -82,7 +81,7 @@ int main(int argc, char** argv) {
     int nthreads = atoi(args["threads"][0].c_str());
 
 
-    bool empirical_freqs = (args["empirical_freqs"][0].compare("YES") == 0);
+    bool empirical_freqs = !(args["vcf_freq"][0].compare("-"));
 
     cout << "adios v0.8" << std::endl << std::endl;
 
