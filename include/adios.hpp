@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <utility>
 
 #include "combinatorics.hpp"
 #include "Linalg.hpp"

@@ -10,7 +10,9 @@ namespace combinatorics
 {
 using std::pair;
 
-int nCk(int n, int k);
+long nCk(long n, long k);
+
+std::vector<long> combination_at_index(long i, long n, long k);
 
 template <typename T>
 std::vector<pair<T, T>> pair_combinations(const std::vector<T>& v)
