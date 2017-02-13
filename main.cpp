@@ -11,6 +11,9 @@
 
 #ifdef HAVE_OPENMP
 #include <omp.h>
+#define OMP_AVAILABLE 1 
+#else 
+#define OMP_AVAILABLE 0
 #endif
 
 #include "vcf.hpp"
@@ -47,7 +50,7 @@ int main(int argc, char** argv) {
         CommandLineArgument{"minmark",           "store",     {"16"},             1,    "Minimum number of shared rare variants to report an IBD segment"},
         CommandLineArgument{"err",               "store",     {"0.001", "0.005"}, 2,    "Allele error rates (rare, common)"},
         CommandLineArgument{"transition",        "store",     {"6", "3"},         2,    "IBD entrance/exit penalty: P(Transition) = 10^(-x))"},
-        CommandLineArgument{"threads",           "store",     {"1"},              1,    "Number of threads"},
+        CommandLineArgument{"threads",           "store",     {"1"},              1,    OMP_AVAILABLE ? "Number of threads" : "SUPPRESS"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
         CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
         CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"}
@@ -78,6 +81,7 @@ int main(int argc, char** argv) {
     auto args = parser.args;
 
     // int nthreads = 1;
+
     int nthreads = atoi(args["threads"][0].c_str());
 
 
