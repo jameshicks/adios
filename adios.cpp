@@ -125,72 +125,80 @@ void adios_parameters::calculate_emission_mats(const Dataset& data)
 }
 
 
+adios_sites find_informative_sites_unphased(const Indptr & ind1,
+    const Indptr & ind2,
+    const int chromidx,
+    const std::vector<int>& rares)
+    {
+        auto chromobj = ind1->chromosomes[chromidx]->info;
+        int max_pos = chromobj->positions.back() + 100;
+
+        auto hapa = ind1->chromosomes[chromidx]->hapa;
+        auto hapb = ind1->chromosomes[chromidx]->hapb;
+        auto hapc = ind2->chromosomes[chromidx]->hapa;
+        auto hapd = ind2->chromosomes[chromidx]->hapb;
+
+        std::vector<int> cur_idx = {0, 0, 0, 0};
+        std::vector<int> cur_vars = {0, 0, 0, 0};
+
+        int rareidx = 0;
+        int nrare = rares.size();
+
+        auto miss = setops::union_(ind1->chromosomes[chromidx]->missing,
+                                   ind2->chromosomes[chromidx]->missing);
+
+        int missidx = 0;
+        int nmiss = miss.size();
+
+        const int nmark = chromobj->nmark();
+
+        std::vector<int> informatives;
+        std::vector<int> states;
+
+        // You cant know ahead of time how many sites are going to be useful
+        // but in my experience it's less than 5%
+        const int reserve_amount = (int)(0.05 * nmark);
+        informatives.reserve(reserve_amount);
+        states.reserve(reserve_amount);
+
+        int current_position = 0;
+        do {
+            cur_vars[0] = cur_idx[0] >= hapa.size() ? max_pos : hapa[cur_idx[0]];
+            cur_vars[1] = cur_idx[1] >= hapb.size() ? max_pos : hapb[cur_idx[1]];
+            cur_vars[2] = cur_idx[2] >= hapc.size() ? max_pos : hapc[cur_idx[2]];
+            cur_vars[3] = cur_idx[3] >= hapd.size() ? max_pos : hapd[cur_idx[3]];
+
+            int current_position = *(std::min_element(cur_vars.begin(),
+                                     cur_vars.end()));
+
+            if (current_position == max_pos) { break; }
+
+            while (rareidx < nrare && rares[rareidx] < current_position) { rareidx++; }
+            while (missidx < nmiss && miss[missidx]  < current_position) { missidx++; }
+
+            bool is_rare = current_position == rares[rareidx];
+            bool is_miss = (nmiss > 0 && current_position == miss[missidx]);
+
+            int s1 = (cur_vars[0] == current_position) + (cur_vars[1] == current_position);
+            int s2 = (cur_vars[2] == current_position) + (cur_vars[3] == current_position);
+            int state = 3 * s1 + s2;
+
+            if ((state == 2 || state == 6 || is_rare) && !is_miss) {
+                informatives.push_back(current_position);
+                states.push_back(state);
+            }
+
+            for (int i = 0; i < 4; i++) {
+                if (cur_vars[i] == current_position) { cur_idx[i]++; }
+            }
 
 
-adios_sites find_informative_sites_unphased(const Indptr& ind1,
-        const Indptr& ind2,
-        const int chromidx,
-        const std::vector<int>& rares)
-{
-    auto chromobj = ind1->chromosomes[chromidx]->info;
-    int max_pos = chromobj->positions.back() + 100;
 
-    auto hapa = ind1->chromosomes[chromidx]->hapa;
-    auto hapb = ind1->chromosomes[chromidx]->hapb;
-    auto hapc = ind2->chromosomes[chromidx]->hapa;
-    auto hapd = ind2->chromosomes[chromidx]->hapb;
+        } while (current_position != max_pos);
 
-    std::vector<int> cur_idx = {0, 0, 0, 0};
-    std::vector<int> cur_vars = {0, 0, 0, 0};
-    int rareidx = 0;
-    int nrare = rares.size();
+        return make_pair(states, informatives);
 
-    const int nmark = chromobj->nmark();
-
-    std::vector<int> informatives;
-    std::vector<int> states;
-
-    // You cant know ahead of time how many sites are going to be useful
-    // but in my experience it's less than 5%
-    const int reserve_amount = (int)(0.05 * nmark);
-    informatives.reserve(reserve_amount);
-    states.reserve(reserve_amount);
-
-    int current_position = 0;
-    do {
-        cur_vars[0] = cur_idx[0] >= hapa.size() ? max_pos : hapa[cur_idx[0]];
-        cur_vars[1] = cur_idx[1] >= hapb.size() ? max_pos : hapb[cur_idx[1]];
-        cur_vars[2] = cur_idx[2] >= hapc.size() ? max_pos : hapc[cur_idx[2]];
-        cur_vars[3] = cur_idx[3] >= hapd.size() ? max_pos : hapd[cur_idx[3]];
-
-        int current_position = *(std::min_element(cur_vars.begin(),
-                                 cur_vars.end()));
-
-        if (current_position == max_pos) { break; }
-
-        while (rareidx < nrare && rares[rareidx] < current_position) { rareidx++; }
-        bool is_rare = current_position == rares[rareidx];
-
-        int s1 = (cur_vars[0] == current_position) + (cur_vars[1] == current_position);
-        int s2 = (cur_vars[2] == current_position) + (cur_vars[3] == current_position);
-        int state = 3 * s1 + s2;
-
-        if (state == 2 || state == 6 || is_rare) {
-            informatives.push_back(current_position);
-            states.push_back(state);
-        }
-
-        for (int i = 0; i < 4; i++) {
-            if (cur_vars[i] == current_position) { cur_idx[i]++; }
-        }
-
-
-
-    } while (current_position != max_pos);
-
-    return make_pair(states, informatives);
-
-}
+    }
 
 
 
