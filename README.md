@@ -15,7 +15,7 @@ No external libraries are required. Running `make test` will run unit tests on m
 ## Options
 + `--vcf`: VCF input file
 + `--vcf_freq`: INFO field in vcf to use as allele frequency, otherwise calculated from data
-+ `--out`: Write IBD information to file
++ `--out`: Prefix for output file
 + `--keep_singletons`: Include singleton variants in dataset
 + `--keep_monomorphic`: Include monomorphic positions in dataset
 + `--freq_floor`: Minimum frequency used in calculations

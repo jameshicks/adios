@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fstream>
 
 #include <errno.h>
 
@@ -79,5 +80,20 @@ public:
     DelimitedFileWriter(const std::string& fn, char delimiter);
     void writetoks(const std::vector<std::string>& toks);
 };
+
+class Logstream {
+public:
+    std::ofstream logfile;
+    Logstream(const std::string& fn);
+};
+
+template <typename T> 
+Logstream& operator<<(Logstream& l, const T& rhs ) {
+    std::cout << rhs;
+    l.logfile << rhs;
+    l.logfile.flush();
+
+    return l;
+}
 
 #endif

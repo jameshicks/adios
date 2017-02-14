@@ -133,3 +133,7 @@ void DelimitedFileWriter::writetoks(const std::vector<std::string>& toks)
         write((i != toks.size() - 1) ? delim : '\n');
     }
 }
+
+Logstream::Logstream(const std::string& fn) {
+    logfile = std::ofstream(fn);
+}

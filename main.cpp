@@ -2,10 +2,12 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <memory>
 #include <stdexcept>
 #include <chrono>
 #include <stdlib.h>
+#include <sys/resource.h>
 
 #include "config.h"
 
@@ -40,7 +42,7 @@ int main(int argc, char** argv) {
         //                  Argument           Action       Default               narg  help string
         CommandLineArgument{"vcf",               "store",     {""},               1,    "VCF input file"},
         CommandLineArgument{"vcf_freq",          "store",     {"-"},              1,    "VCF INFO field containing allele frequency"},
-        CommandLineArgument{"out",               "store",     {"-"},              1,    "Write output to file"},
+        CommandLineArgument{"out",               "store",     {"-"},              1,    "Output file prefix"},
         CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},             0,    "Include singleton variants from dataset"},
         CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},             0,    "Include monomorphic positions in dataset"},
         CommandLineArgument{"rare",              "store",     {"0.05"},           1,    "Rare frequency threshold"},
@@ -80,44 +82,55 @@ int main(int argc, char** argv) {
     }
     auto args = parser.args;
 
-    // int nthreads = 1;
+    std::string logfilename;
+    if (!args["out"][0].compare("-")) {
+        logfilename = "adios.log";
+    } else {
+        std::stringstream ss; 
+        ss << args["out"][0] << ".log";
+        logfilename = ss.str();
+    }
+     
+    
+
+    Logstream log(logfilename);
 
     int nthreads = atoi(args["threads"][0].c_str());
 
 
     bool empirical_freqs = !(args["vcf_freq"][0].compare("-"));
 
-    cout << "adios v0.8" << std::endl << std::endl;
+    log << "adios v0.8\n";
 
 
 #ifdef HAVE_OPENMP
     omp_set_num_threads(nthreads);
 #else
     if (nthreads != 1) {
-        cout << '\n';
-        cout << "adios was not compiled with multithreading support\n";
-        cout << "Defaulting to single threading\n";
-        cout << '\n';
+        log << '\n';
+        log << "adios was not compiled with multithreading support\n";
+        log << "Defaulting to single threading\n";
+        log << '\n';
     }
 #endif
 
 
     adios::adios_parameters params = adios::params_from_args(args);
 
-    cout << "VCF file: " << args["vcf"][0] << '\n';
-    cout << "Frequencies: " << (empirical_freqs ? std::string("Calculated from dataset") : args["vcf_freq"][0]) << '\n';
-    cout << "Rare frequency threshold: " << params.rare_thresh << '\n';
-    cout << "Transition costs: " << params.gamma_ << " (IBD entry), " << params.rho << " (IBD exit)\n";
-    cout << "Minimum segment LOD: " << params.min_lod << '\n';
-    cout << "Minimum segment length: " << bp_formatter(params.min_length) << '\n';
-    cout << "Minimum markers to declare IBD: " << params.min_mark << '\n';
-    cout << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)" << '\n';
-    cout << "Decoding: " << (params.viterbi ? "MAP" : "ML") << '\n';
+    log << "VCF file: " << args["vcf"][0] << '\n';
+    log << "Frequencies: " << (empirical_freqs ? std::string("Calculated from dataset") : args["vcf_freq"][0]) << '\n';
+    log << "Rare frequency threshold: " << params.rare_thresh << '\n';
+    log << "Transition costs: " << params.gamma_ << " (IBD entry), " << params.rho << " (IBD exit)\n";
+    log << "Minimum segment LOD: " << params.min_lod << '\n';
+    log << "Minimum segment length: " << bp_formatter(params.min_length) << '\n';
+    log << "Minimum markers to declare IBD: " << params.min_mark << '\n';
+    log << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)" << '\n';
+    log << "Decoding: " << (params.viterbi ? "MAP" : "ML") << '\n';
 #ifdef HAVE_OPENMP
-    cout << "Threads: " << nthreads << '\n';
+    log << "Threads: " << nthreads << '\n';
 #endif
 
-    cout << endl;
+    log << '\n';
 
     VCFParams vcfp = {!(args["keep_singletons"][0].compare("YES") == 0),
                       !(args["keep_monomorphic"][0].compare("YES") == 0),
@@ -131,8 +144,8 @@ int main(int argc, char** argv) {
     try {
         data = read_vcf(args["vcf"][0], vcfp);
     } catch (const std::exception& e) {
-        std::cerr << "Could not process file: " << args["vcf"][0] << ": ";
-        std::cerr << e.what() << std::endl;
+        log << "Could not process file: " << args["vcf"][0] << ": ";
+        log << e.what() << '\n';
         return 1;
     }
 
@@ -148,32 +161,34 @@ int main(int argc, char** argv) {
     double elapsedSeconds = ((end - start).count()) * std::chrono::steady_clock::period::num / static_cast<double>(std::chrono::steady_clock::period::den);
 
     size_t nmark_total = data.nmark() + data.nexcluded();
-    std::cout << "Processed " << nmark_total << " variants ";
-    std::cout << "in " << elapsedSeconds << "s ";
-    std::cout << "(" << (nmark_total / elapsedSeconds) << " variants/sec)\n\n";
+    log << "Processed " << nmark_total << " variants ";
+    log << "in " << elapsedSeconds << "s ";
+    log << "(" << (nmark_total / elapsedSeconds) << " variants/sec)\n\n";
 
-    std::cout << data.ninds() << " individuals" << std::endl;
+    log << data.ninds() << " individuals\n";
     for (size_t chridx = 0; chridx < data.nchrom(); ++chridx) {
         auto c = data.chromosomes[chridx];
-        std::cout << "Chromosome " << c->label << " (" << c->size() / 1000000 << "Mb)";
-        std::cout << ": " << c->nmark() << " variants, ";
-        std::cout << params.rare_sites[chridx].size() << " rare. ";
+        log << "Chromosome " << c->label << " (" << c->size() / 1000000 << "Mb)";
+        log << ": " << c->nmark() << " variants, ";
+        log << params.rare_sites[chridx].size() << " rare. ";
 
         if (!(c->exclusions.empty())) {
-            std::cout << "Excluded";
+            log << "Excluded";
             for (auto kv : (c->exclusions)) {
-                std::cout << " " << kv.second << ' ' << kv.first << ',';
+                log << " " << kv.second << ' ' << kv.first << ',';
             }
-            std::cout << '\n';
+            log << '\n';
         }
 
-        std::cout << std::endl;
+        log << '\n';
     }
 
     // Precompute the emission matrices.
     params.calculate_emission_mats(data);
 
-    DelimitedFileWriter output(args["out"][0], '\t');
+    std::string output_filename = !(args["out"][0].compare("-")) ? 
+                                   "-" : (args["out"][0] + ".ibd");  
+    DelimitedFileWriter output(output_filename, '\t');
     adios::adios(data, params, output);
 }
 
