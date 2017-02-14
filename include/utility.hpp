@@ -7,6 +7,8 @@
 #include <utility>
 #include <iomanip>
 #include <math.h>
+#include <time.h>
+#include <stdlib.h>
 
 std::vector<std::string> slice(std::vector<std::string>& inp,
                                size_t start,
@@ -28,5 +30,8 @@ struct ValueRun {
 
 std::vector<ValueRun> runs_gte(const std::vector<int>& v, int thresh);
 std::vector<ValueRun> runs_gte_classic(std::vector<int>& sequence, int minval, int minlength);
+
+std::string current_time_string(void);
+std::string print_elapsed(const timeval& t);
 
 #endif

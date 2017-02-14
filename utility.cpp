@@ -109,3 +109,59 @@ std::vector<ValueRun> runs_gte_classic(std::vector<int>& sequence, int minval, i
 
     return out;
 }
+
+std::string current_time_string(void) {
+    time_t rt = time(NULL); 
+    struct tm * local;
+    local = localtime(&rt);
+
+    std::string s = asctime(local);
+    
+    return s;
+}
+
+std::string print_elapsed(const timeval& t) {
+    const int seconds_per_minute = 60;
+    const int seconds_per_hour = 60 * seconds_per_minute;
+    const int seconds_per_day = seconds_per_hour * 24;
+    
+    long vals[4] = {0,0,0,0};
+    const char* units = "dhms";    
+    long seconds = t.tv_sec;
+    long millisec = lround(t.tv_usec / 1000.0);
+
+    ldiv_t quot = ldiv(seconds, seconds_per_day);
+    vals[0] = quot.quot;
+    seconds = quot.rem;
+    
+    quot = ldiv(seconds, seconds_per_hour);
+    vals[1] = quot.quot;
+    seconds = quot.rem;
+    
+    quot = ldiv(seconds, seconds_per_minute);
+    vals[2] = quot.quot;
+    vals[3] = quot.rem;
+
+
+
+    int startunit = -1;
+
+    for (int i = 0; i < 4; i++) {
+      if (vals[i]) { 
+        startunit = i;
+        break;
+      }
+    }
+
+    startunit = startunit >= 0 ? startunit : 3;
+
+
+    std::stringstream ss; 
+    for (int i = startunit; i < 3; i++) {
+      ss <<  vals[i] << units[i];      
+    }
+
+    ss << vals[3] << '.' << millisec << units[3];
+    return ss.str();
+}
+

@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <chrono>
 #include <stdlib.h>
+#include <time.h>
 #include <sys/resource.h>
 
 #include "config.h"
@@ -30,6 +31,15 @@ int main(int argc, char** argv) {
     using std::string;
     using std::cout;
     using std::endl;
+
+    struct timespec prog_start;
+    struct timespec prog_stop;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &prog_start)) {
+        std::cerr << "Error getting clock time\n";
+    }
+
+    string sprog_start = current_time_string();
 
 
     std::vector<string> rawargs;
@@ -101,6 +111,7 @@ int main(int argc, char** argv) {
     bool empirical_freqs = !(args["vcf_freq"][0].compare("-"));
 
     log << "adios v0.8\n";
+    log << "Started at " << sprog_start << "\n\n";
 
 
 #ifdef HAVE_OPENMP
@@ -140,6 +151,7 @@ int main(int argc, char** argv) {
 
 
     auto start = std::chrono::steady_clock::now();
+    
     Dataset data;
     try {
         data = read_vcf(args["vcf"][0], vcfp);
@@ -157,7 +169,9 @@ int main(int argc, char** argv) {
     }
 
     data.floor_frequencies(std::stod(args["freq_floor"][0]));
+    
     auto end = std::chrono::steady_clock::now();
+    
     double elapsedSeconds = ((end - start).count()) * std::chrono::steady_clock::period::num / static_cast<double>(std::chrono::steady_clock::period::den);
 
     size_t nmark_total = data.nmark() + data.nexcluded();
@@ -190,6 +204,20 @@ int main(int argc, char** argv) {
                                    "-" : (args["out"][0] + ".ibd");  
     DelimitedFileWriter output(output_filename, '\t');
     adios::adios(data, params, output);
+
+    log << "\n\nCompleted at " << current_time_string() << '\n';
+    
+    if (clock_gettime(CLOCK_MONOTONIC, &prog_stop)) {
+        std::cerr << "Error getting clock time\n";
+    }
+
+    timeval real = {prog_stop.tv_sec - prog_start.tv_sec, 0};
+
+    struct rusage usage; 
+    getrusage(RUSAGE_SELF, &usage);
+    log << print_elapsed(real) << "\tReal time\n";
+    log << print_elapsed(usage.ru_utime) << "\tCPU time\n";
+    log << print_elapsed(usage.ru_stime) << "\tSystem time\n";
 }
 
 
