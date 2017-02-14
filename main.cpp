@@ -111,7 +111,13 @@ int main(int argc, char** argv) {
     bool empirical_freqs = !(args["vcf_freq"][0].compare("-"));
 
     log << "adios v0.8\n";
-    log << "Started at " << sprog_start << "\n\n";
+    log << "Started at " << sprog_start << "\n";
+
+    log.logfile << "Command: ";
+    for (int argidx = 0; argidx < argc; ++argidx) {
+        log.logfile << ' ' << (argv[argidx]);
+    }
+    log.logfile << "\n\n";
 
 
 #ifdef HAVE_OPENMP
@@ -205,7 +211,7 @@ int main(int argc, char** argv) {
     DelimitedFileWriter output(output_filename, '\t');
     adios::adios(data, params, output);
 
-    log << "\n\nCompleted at " << current_time_string() << '\n';
+    log << "Completed at " << current_time_string() << '\n';
     
     if (clock_gettime(CLOCK_MONOTONIC, &prog_stop)) {
         std::cerr << "Error getting clock time\n";
