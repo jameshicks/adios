@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
         CommandLineArgument{"minlod",            "store",     {"3.0"},            1,    "Minimum LOD to report a segment"},
         CommandLineArgument{"minlength",         "store",     {"1.0"},            1,    "Miniumum length to report a segment (Mb)"},
         CommandLineArgument{"minmark",           "store",     {"16"},             1,    "Minimum number of shared rare variants to report an IBD segment"},
-        CommandLineArgument{"err",               "store",     {"0.001", "0.005"}, 2,    "Allele error rates (rare, common)"},
+        CommandLineArgument{"err",               "store",     {"0.002"},          1,    "Allele error rate"},
         CommandLineArgument{"transition",        "store",     {"6", "3"},         2,    "IBD entrance/exit penalty: P(Transition) = 10^(-x))"},
         CommandLineArgument{"threads",           "store",     {"1"},              1,    OMP_AVAILABLE ? "Number of threads" : "SUPPRESS"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
@@ -146,8 +146,9 @@ int main(int argc, char** argv) {
     log << "Minimum segment LOD: " << params.min_lod << '\n';
     log << "Minimum segment length: " << bp_formatter(params.min_length) << '\n';
     log << "Minimum markers to declare IBD: " << params.min_mark << '\n';
-    log << "Genotype error rate: " << params.err_rate_common << " (common variants), " << params.err_rate_rare << " (rare variants)" << '\n';
+    log << "Genotype error rate: " << params.err_rate << '\n';
     log << "Decoding: " << (params.viterbi ? "MAP" : "ML") << '\n';
+
 #ifdef HAVE_OPENMP
     log << "Threads: " << nthreads << '\n';
 #endif
