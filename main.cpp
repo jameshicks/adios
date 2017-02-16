@@ -69,7 +69,12 @@ int main(int argc, char** argv) {
     };
     for (auto argi : arginfo) { parser.add_argument(argi); }
 
-    parser.update_args(rawargs);
+    try {     
+        parser.update_args(rawargs);
+    } catch (std::out_of_range& e) {
+        std::cerr << e.what() << '\n';
+        return 64; 
+    }
 
 
     if (parser.has_arg("version")) {

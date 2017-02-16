@@ -13,8 +13,12 @@ void ArgumentParser::update_args(std::vector<std::string> newargs) {
     for (auto it = newargs.begin() + 1; it != newargs.end(); ++it) {
         if (stringops::startswith(*it, "--")) {
             cur_flag = it->substr(2);
+            
+            if (args.find(cur_flag) == args.end()) { 
+                throw std::out_of_range("Unknown argument: " + cur_flag); 
+            }
             CommandLineArgument a = arg_info.at(cur_flag);
-
+            
             if (a.action.compare("store") == 0) {
                 args[cur_flag] = {};
             } else if (a.action.compare("store_yes") == 0) {
