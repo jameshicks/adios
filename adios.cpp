@@ -239,8 +239,13 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 
                 completed++;
                 double progress = (double)completed / (double)(pairs.size());
+                
                 if (progress > signpost) {
-                    if (!out.is_stdout()) { std::cout << sfloat(progress * 100, 1) << '%' << "..." << std::endl; }
+                    if (!out.is_stdout()) {
+                        std::cout << "\rChromosome " << d.chromosomes[chridx]->label;
+                        std::cout << ": " << sfloat(progress * 100, 1) << '%';
+                        std::cout << std::flush;
+                    }
                     while (progress > signpost) { signpost += signpost_step; }
                 }
 
@@ -248,6 +253,7 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 
         }
     }
+    if (!out.is_stdout()) { std::cout << '\r' << std::flush;  }
 }
 
 
