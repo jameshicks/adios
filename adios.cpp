@@ -215,8 +215,12 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
     long npairs = nCk(ninds, 2);
 
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
-        double signpost = 0.0; double signpost_step = 0.01;
+        double signpost = 0.0; 
+        double signpost_step = npairs > 100000 ? 0.001 : 0.01;
         int completed = 0;
+        unsigned long markers_used = 0;
+        unsigned long total_mark = d.chromosomes[chridx]->nmark();
+
         // If openmp is available, this is the loop we want to parallelize.
         // This gives each thread a set of individual pairs to compute.
         #pragma omp parallel for
@@ -228,22 +232,29 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
             Indptr_pair pair = std::make_pair(inds[indices[0]],
                                               inds[indices[1]]);
 
-            std::vector<Segment> segs = adios_pair_unphased(pair, chridx, params);
+            adios_result res = adios_pair_unphased(pair, chridx, params);
 
             #pragma omp critical
             {
                 // File IO needs to be locked. This block is OMP critical
                 // to prevent output (both to stdout and file) from being
                 // garbled.
-                for (Segment s : segs) { out.writetoks(s.record()); }
-
+                for (Segment s : res.segments) { 
+                    out.writetoks(s.record()); 
+                }
+                
+                markers_used += res.nmark;
                 completed++;
                 double progress = (double)completed / (double)(pairs.size());
                 
                 if (progress > signpost) {
+                    double mean_mark = markers_used / (double)completed;
+
                     if (!out.is_stdout()) {
                         std::cout << "\rChromosome " << d.chromosomes[chridx]->label;
-                        std::cout << ": " << sfloat(progress * 100, 1) << '%';
+                        std::cout << ": " << sfloat(progress * 100, 1) << "% complete. ";
+                        std::cout << "Average markers per pair " << sfloat(mean_mark, 2);
+                        std::cout << " (" << sfloat(100 * mean_mark / total_mark, 3) << "%)";
                         std::cout << std::flush;
                     }
                     while (progress > signpost) { signpost += signpost_step; }
@@ -253,15 +264,17 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 
         }
     }
-    if (!out.is_stdout()) { std::cout << '\r' << std::flush;  }
+    if (!out.is_stdout()) { std::cout << '\n' << std::flush;  }
 }
 
 
-std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
+adios_result adios_pair_unphased(const Indptr_pair& inds,
         int chromidx,
         const adios_parameters& params)
 {
     using Linalg::Matrix;
+
+    adios_result res; 
 
     Indptr ind1 = inds.first;
     Indptr ind2 = inds.second;
@@ -276,7 +289,7 @@ std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
     auto observations = useful.first;
     std::vector<int> informative_sites(useful.second.begin(), useful.second.end());
     int nmark = informative_sites.size();
-
+    res.nmark = nmark;
 
     // Make the emission matrices
     std::vector<Matrix*> emissions;
@@ -292,17 +305,17 @@ std::vector<Segment> adios_pair_unphased(const Indptr_pair& inds,
 
     std::vector<ValueRun> runs = runs_gte_classic(hidden_states, 1, 5);
 
-    std::vector<Segment> goodsegs;
     for (ValueRun r : runs) {
         Segment seg(ind1, ind2, r, chromobj,
                     observations, emissions,
                     informative_sites, params);
 
         if (seg.passes_filters(params)) {
-            goodsegs.push_back(seg);
+            res.segments.push_back(seg);
         }
     }
-    return goodsegs;
+
+    return res;
 }
 
 Segment::Segment(Indptr a,

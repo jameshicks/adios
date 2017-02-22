@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
     DelimitedFileWriter output(output_filename, '\t');
     adios::adios(data, params, output);
 
-    log << "Completed at " << current_time_string() << '\n';
+    log << "\nCompleted at " << current_time_string() << '\n';
     
     if (clock_gettime(CLOCK_MONOTONIC, &prog_stop)) {
         std::cerr << "Error getting clock time\n";
@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
     getrusage(RUSAGE_SELF, &usage);
     log << print_elapsed(real) << "\tReal time\n";
     log << print_elapsed(usage.ru_utime) << "\tCPU time\n";
-    log << print_elapsed(usage.ru_stime) << "\tSystem time\n";
+    log << print_elapsed(usage.ru_stime) << "\tSystem time\n\n";
 }
 
 

@@ -94,6 +94,14 @@ public:
 
 };
 
+struct adios_result { 
+    // The number of markers used for this pair
+    unsigned int nmark; 
+
+    // The shared segments in the pair
+    std::vector<Segment> segments; 
+};
+
 // Make the model parameters from the command line args 
 adios_parameters params_from_args(std::map<std::string, std::vector<std::string>> args);
 
@@ -122,7 +130,7 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
 void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out);
 
 // Perform adios on a pair of individuals on one chromosome
-std::vector<Segment> adios_pair_unphased(const Indptr_pair& pair,
+adios_result adios_pair_unphased(const Indptr_pair& pair,
                          int chromidx,
                          const adios_parameters& params);
 }
