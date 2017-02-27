@@ -209,7 +209,6 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
         "STATE", "NMARK", "NRARE", "NERR", "LOD"
     };
     out.writetoks(header);
-    std::vector<Indptr_pair> pairs = combinatorics::pair_combinations(inds);
 
     long ninds = inds.size();
     long npairs = nCk(ninds, 2);
@@ -245,7 +244,7 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
                 
                 markers_used += res.nmark;
                 completed++;
-                double progress = (double)completed / (double)(pairs.size());
+                double progress = (double)completed / (double)(npairs);
                 
                 if (progress > signpost) {
                     double mean_mark = markers_used / (double)completed;
