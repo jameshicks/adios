@@ -2,20 +2,18 @@
 
 namespace adios
 {
+
 Matrix unphased_transition_matrix(int l10gamma, int l10rho)
 {
     const double gamma = pow(10, -l10gamma);
-    const double rho   = pow(10, -l10rho);
-    const double gamma_2 = pow(gamma, 2);
-    const double rho_2 = pow(rho, 2);
 
     Matrix t = {
-        { 1 - gamma - gamma_2,   gamma,             gamma_2 },
-        { rho,                   1 - gamma - rho,   gamma },
-        { rho_2,                 rho,               1 - rho - rho_2 }
+        {1 - gamma, gamma},
+        {gamma,     1-gamma}
     };
     return t;
 }
+
 
 Matrix unphased_genotype_error_matrix(double eps)
 {
@@ -34,33 +32,32 @@ Matrix unphased_genotype_error_matrix(double eps)
     return outp;
 }
 
-Matrix unphased_emission_matrix(double q)
-{
-    Matrix mat(9, 3);
+    Matrix unphased_emission_matrix(double q) {
+        using namespace Linalg;
+        Matrix mat(9, 2);
 
-    const double p = 1 - q;
-    const double p_2 = pow(p, 2);
-    const double p_3 = pow(p, 3);
-    const double q_2 = pow(q, 2);
-    const double q_3 = pow(q, 3);
-    const double pq = p * q;
-    const double p_2q_2 = pow(pq, 2);
+        double p = 1 - q;
 
-    mat = {
-        // P(x|IBD=0)     P(x|IBD=1)      P(x|IBD=2)
-        { pow(p, 4),      p_3,        p_2 },       // 0: AA,AA
-        { p_3 * q,        p_2 * q,    0 },         // 1: AA,AB
-        { p_2 * q_2,      0,          0 },         // 2: AA,BB
-        { p_3 * q,        p_2 * q,    0 },         // 3: AB,AA
-        { 4 * p_2q_2,     pq,         2 * pq },    // 4: AB,AB
-        { p * q_3,        p * q_2,    0 },         // 5: AB,BB
-        { p_2q_2,         0,          0 },         // 6: BB,AA
-        { p * q_3,        p * q_2,    0 },         // 7: BB,AB
-        { pow(q, 4),      q_3,        q_2 }        // 8: BB,BB
-    };
+        // double c1 = 1 - pow(p, 4);
+        // double c2 = 1 - pow(p, 3);
 
-    return mat;
-}
+        double c1 = 1.0;
+        double c2 = 1.0;
+
+        mat = {
+            {0,                               0                  },
+            {2 * pow(p, 3)*q / c1,            pow(p, 2) * q / c2 },
+            {pow(p, 2)*pow(q, 2) / c1,        0                  },
+            {2 * pow(p, 3) * q / c1,          pow(p, 2) * q / c2 },
+            {4 * pow(p, 2) * pow(q, 2) / c1,  p*q / c2           },
+            {2 * p * pow(q, 3) / c1,          p * pow(q, 2) / c2 },
+            {pow(p, 2)*pow(q, 2) / c1,        0                  },
+            {2 * p * pow(q, 3) / c1,          p * pow(q, 2) / c2 },
+            {pow(q, 4) / c1,                  pow(q, 3) / c2     }
+        };
+
+        return mat;
+    }
 
 
 adios_parameters params_from_args(std::map<std::string, std::vector<std::string>> args)
@@ -178,7 +175,8 @@ adios_sites find_informative_sites_unphased(const Individual& ind1,
             int s2 = (cur_vars[2] == current_position) + (cur_vars[3] == current_position);
             int state = 3 * s1 + s2;
 
-            if ((state == 2 || state == 6 || is_rare) && !is_miss) {
+            bool srv = is_shared_rv(state) && is_rare;
+            if ((state == 2 || state == 6 || srv) && !is_miss) {
                 informatives.push_back(current_position);
                 states.push_back(state);
             }
