@@ -80,6 +80,7 @@ public:
     Individual(void);
     Individual(const std::string& lab);
     // ~Individual(void);
+    Individual(const Individual& ind);
 };
 
 class Dataset

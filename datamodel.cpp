@@ -90,6 +90,10 @@ Individual::Individual(const std::string& lab) {
     label.assign(lab);
 }
 
+Individual::Individual(const Individual& ind) {
+    label = ind.label;
+    chromosomes = ind.chromosomes;
+}
 
 void Individual::add_empty_chromosome(shared_ptr<ChromInfo> inf) {
     Genotypes g(inf);
