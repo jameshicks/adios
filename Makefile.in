@@ -6,7 +6,7 @@ OPTIMIZATION_FLAGS = -march=native -O3 -funroll-loops
 CXXFLAGS = -std=c++11 @CXXFLAGS@
 CXXFLAGS += $(OPTIMIZATION_FLAGS) $(WARN_FLAGS) 
 INCLUDES = -Iinclude -I.
-COMMON_SOURCES = ArgumentParser.cpp FileIOManager.cpp HiddenMarkov.cpp Linalg.cpp adios.cpp combinatorics.cpp utility.cpp datamodel.cpp setops.cpp stringops.cpp vcf.cpp
+COMMON_SOURCES = ArgumentParser.cpp FileIOManager.cpp HiddenMarkov.cpp Linalg.cpp adios.cpp combinatorics.cpp utility.cpp datamodel.cpp power.cpp setops.cpp stringops.cpp vcf.cpp
 COMMON_OBJECTS = $(COMMON_SOURCES:.cpp=.o)
 
 LDFLAGS=@LDFLAGS@
@@ -27,6 +27,10 @@ all: $(EXEC)
 $(EXEC): $(COMMON_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c main.cpp -o main.o
 	$(CXX) main.o $(COMMON_OBJECTS) -o $(EXEC) $(LDFLAGS) $(LIBS)
+
+power: $(COMMON_OBJECTS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c power_main.cpp -o power_main.o
+	$(CXX) power_main.o $(COMMON_OBJECTS) -o adios_power $(LDFLAGS) $(LIBS)
 
 $(COMMON_OBJECTS): %.o: %.cpp 
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
