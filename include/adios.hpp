@@ -25,10 +25,13 @@ namespace adios {
 
 
 typedef std::pair<std::vector<int>, std::vector<int>> adios_sites;
-typedef std::shared_ptr<Individual> Indptr;
-typedef std::pair<Indptr, Indptr> Indptr_pair;
 typedef std::shared_ptr<ChromInfo> Chromptr;
 using std::pair;
+
+struct Indpair {
+    Individual ind1;
+    Individual ind2;
+};
 
 // Parameters for ADIOS.
 struct adios_parameters {
@@ -51,8 +54,8 @@ struct adios_parameters {
 
 class Segment {
 private:
-    Indptr ind1;  // The first individual
-    Indptr ind2;  // The second individual
+    std::string ind1;  // The first individual
+    std::string ind2;  // The second individual
     Chromptr chrom;  // Chromosome info
 
     size_t start;
@@ -73,7 +76,7 @@ public:
         return chrom->positions[full_stop] - chrom->positions[full_start];
     }
 
-    Segment(Indptr a, Indptr b, ValueRun& run, Chromptr c,
+    Segment(const Individual& a, const Individual& b, ValueRun& run, Chromptr c,
             std::vector<int>& obs, std::vector<Matrix*>& emissions,
             std::vector<int>& adiossites, const adios_parameters& params);
 
@@ -120,8 +123,8 @@ Matrix unphased_genotype_error_matrix(double eps);
 Matrix unphased_emission_matrix(double q);
 
 // For two individuals, find a set of informative sites
-adios_sites find_informative_sites_unphased(const Indptr& ind1,
-                                            const Indptr& ind2,
+adios_sites find_informative_sites_unphased(const Individual& ind1,
+                                            const Individual& ind2,
                                             int chromidx,
                                             const AlleleSites& rares);
 
@@ -130,7 +133,7 @@ adios_sites find_informative_sites_unphased(const Indptr& ind1,
 void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out);
 
 // Perform adios on a pair of individuals on one chromosome
-adios_result adios_pair_unphased(const Indptr_pair& pair,
+adios_result adios_pair_unphased(const Individual& ind1, const Individual& ind2,
                          int chromidx,
                          const adios_parameters& params);
 }

@@ -85,7 +85,7 @@ public:
 class Dataset
 {
 public:
-    std::map<std::string, shared_ptr<Individual>> individuals;
+    std::map<std::string, Individual> individuals;
     std::vector<shared_ptr<ChromInfo>> chromosomes;
     
     // Number of individuals
@@ -99,8 +99,8 @@ public:
 
     // Number of excluded markers
     size_t nexcluded(void) const;
-    shared_ptr<Individual> add_individual(const std::string& label);
-    shared_ptr<ChromInfo> add_chromosome(const std::string& label);
+    void add_individual(const std::string& label);
+    void add_chromosome(const std::string& label);
     void round_frequencies(unsigned int places);
     void floor_frequencies(double floor);
 

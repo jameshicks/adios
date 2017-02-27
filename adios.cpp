@@ -120,18 +120,18 @@ void adios_parameters::calculate_emission_mats(const Dataset& data)
 }
 
 
-adios_sites find_informative_sites_unphased(const Indptr & ind1,
-    const Indptr & ind2,
+adios_sites find_informative_sites_unphased(const Individual& ind1,
+    const Individual& ind2,
     const int chromidx,
     const std::vector<int>& rares)
     {
-        auto chromobj = ind1->chromosomes[chromidx].info;
+        auto chromobj = ind1.chromosomes[chromidx].info;
         int max_pos = chromobj->positions.back() + 100;
 
-        auto hapa = ind1->chromosomes[chromidx].hapa;
-        auto hapb = ind1->chromosomes[chromidx].hapb;
-        auto hapc = ind2->chromosomes[chromidx].hapa;
-        auto hapd = ind2->chromosomes[chromidx].hapb;
+        auto hapa = ind1.chromosomes[chromidx].hapa;
+        auto hapb = ind1.chromosomes[chromidx].hapb;
+        auto hapc = ind2.chromosomes[chromidx].hapa;
+        auto hapd = ind2.chromosomes[chromidx].hapb;
 
         std::vector<int> cur_idx = {0, 0, 0, 0};
         std::vector<int> cur_vars = {0, 0, 0, 0};
@@ -139,8 +139,8 @@ adios_sites find_informative_sites_unphased(const Indptr & ind1,
         int rareidx = 0;
         int nrare = rares.size();
 
-        auto miss = setops::union_(ind1->chromosomes[chromidx].missing,
-                                   ind2->chromosomes[chromidx].missing);
+        auto miss = setops::union_(ind1.chromosomes[chromidx].missing,
+                                   ind2.chromosomes[chromidx].missing);
 
         int missidx = 0;
         int nmiss = miss.size();
@@ -201,7 +201,7 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 {
     using namespace combinatorics;
 
-    std::vector<Indptr> inds;
+    std::vector<Individual> inds;
     for (auto pr = d.individuals.begin(); pr != d.individuals.end(); ++pr) { inds.push_back(pr->second);}
 
     std::vector<std::string> header = {
@@ -228,10 +228,10 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
                                         ninds,
                                         2);
 
-            Indptr_pair pair = std::make_pair(inds[indices[0]],
-                                              inds[indices[1]]);
+            Individual& ind1 = inds[indices[0]];
+            Individual& ind2 = inds[indices[1]];
 
-            adios_result res = adios_pair_unphased(pair, chridx, params);
+            adios_result res = adios_pair_unphased(ind1, ind2, chridx, params);
 
             #pragma omp critical
             {
@@ -267,7 +267,7 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 }
 
 
-adios_result adios_pair_unphased(const Indptr_pair& inds,
+adios_result adios_pair_unphased(const Individual& ind1, const Individual& ind2,
         int chromidx,
         const adios_parameters& params)
 {
@@ -275,15 +275,12 @@ adios_result adios_pair_unphased(const Indptr_pair& inds,
 
     adios_result res; 
 
-    Indptr ind1 = inds.first;
-    Indptr ind2 = inds.second;
-
-    auto chromobj = ind1->chromosomes[chromidx].info;
+    auto chromobj = ind1.chromosomes[chromidx].info;
 
     auto useful = find_informative_sites_unphased(ind1,
-                  ind2,
-                  chromidx,
-                  params.rare_sites[chromidx]);
+                                                  ind2,
+                                                  chromidx,
+                                                  params.rare_sites[chromidx]);
 
     auto observations = useful.first;
     std::vector<int> informative_sites(useful.second.begin(), useful.second.end());
@@ -317,8 +314,8 @@ adios_result adios_pair_unphased(const Indptr_pair& inds,
     return res;
 }
 
-Segment::Segment(Indptr a,
-                 Indptr b,
+Segment::Segment(const Individual& a,
+                 const Individual& b,
                  ValueRun& run,
                  Chromptr c,
                  std::vector<int>& obs,
@@ -327,8 +324,8 @@ Segment::Segment(Indptr a,
                  const adios_parameters& params)
 {
 
-    ind1 = a;
-    ind2 = b;
+    ind1 = a.label;
+    ind2 = b.label;
     chrom = c;
 
     start = run.start;
@@ -410,8 +407,8 @@ std::vector<std::string> Segment::record(void) const
     using std::to_string;
 
     std::vector<std::string> s = {
-        ind1->label,
-        ind2->label,
+        ind1,
+        ind2,
         chrom->label,
         to_string(chrom->positions[full_start]),
         to_string(chrom->positions[full_stop]),
@@ -429,8 +426,8 @@ std::string Segment::record_string(void) const
 {
 
     std::stringstream s;
-    s << ind1->label << '\t';
-    s << ind2->label << '\t';
+    s << ind1 << '\t';
+    s << ind2 << '\t';
     s << chrom->label << '\t';
     s << chrom->positions[full_start] << '\t';
     s << chrom->positions[full_stop]  << '\t';

@@ -265,8 +265,11 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
         }
     }
 
-    std::vector<std::shared_ptr<Individual>> inds;
-    for (auto v : indlabs) { inds.push_back(data.individuals[v]); }
+    std::vector<Individual*> inds;
+    for (auto v : indlabs) { 
+        inds.push_back(&data.individuals[v]); 
+    }
+    
     int ninds = inds.size();
 
     VCFRecordGenotypeContainer con(ninds);

@@ -129,20 +129,19 @@ size_t Dataset::nexcluded(void) const {
     return tot;
 }
 
-shared_ptr<Individual> Dataset::add_individual(const std::string& lab) {
-    shared_ptr<Individual> ind(new Individual(lab));
-    individuals[lab] = ind;
-    return ind;
+void Dataset::add_individual(const std::string& lab) {
+    individuals[lab] = Individual(lab);
+
 }
 
-shared_ptr<ChromInfo> Dataset::add_chromosome(const std::string& lab) {
+void Dataset::add_chromosome(const std::string& lab) {
     shared_ptr<ChromInfo> c(new ChromInfo(lab));
     chromosomes.push_back(c);
 
     for (auto it = individuals.begin(); it != individuals.end(); ++it) {
-        it->second->add_empty_chromosome(c);
+        it->second.add_empty_chromosome(c);
     }
-    return c;
+
 }
 
 void Dataset::round_frequencies(unsigned int places) {
