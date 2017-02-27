@@ -92,12 +92,12 @@ Individual::Individual(const std::string& lab) {
 
 
 void Individual::add_empty_chromosome(shared_ptr<ChromInfo> inf) {
-    shared_ptr<Genotypes> g(new Genotypes(inf));
+    Genotypes g(inf);
     chromosomes.push_back(g);
 }
 
 int Individual::get_minor_allele_count(int chromidx, int markidx) {
-    return chromosomes[chromidx]->get_minor_allele_count(markidx);
+    return chromosomes[chromidx].get_minor_allele_count(markidx);
 }
 
 // Dataset

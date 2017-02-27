@@ -72,7 +72,7 @@ class Individual
 {
 public:
     std::string label;
-    std::vector<shared_ptr<Genotypes>> chromosomes;
+    std::vector<Genotypes> chromosomes;
 
     void add_empty_chromosome(shared_ptr<ChromInfo> inf);
     void set_allele(int chromidx, int markidx, int hapidx, int allele);
@@ -110,7 +110,7 @@ public:
 
 inline void Individual::set_allele(int chromidx, int markidx, int hapidx, int allele)
 {
-    chromosomes[chromidx]->set_allele(markidx, hapidx, allele);
+    chromosomes[chromidx].set_allele(markidx, hapidx, allele);
 }
 
 inline void Genotypes::set_allele(int markidx, int hapidx, int allele)

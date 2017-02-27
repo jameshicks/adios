@@ -125,13 +125,13 @@ adios_sites find_informative_sites_unphased(const Indptr & ind1,
     const int chromidx,
     const std::vector<int>& rares)
     {
-        auto chromobj = ind1->chromosomes[chromidx]->info;
+        auto chromobj = ind1->chromosomes[chromidx].info;
         int max_pos = chromobj->positions.back() + 100;
 
-        auto hapa = ind1->chromosomes[chromidx]->hapa;
-        auto hapb = ind1->chromosomes[chromidx]->hapb;
-        auto hapc = ind2->chromosomes[chromidx]->hapa;
-        auto hapd = ind2->chromosomes[chromidx]->hapb;
+        auto hapa = ind1->chromosomes[chromidx].hapa;
+        auto hapb = ind1->chromosomes[chromidx].hapb;
+        auto hapc = ind2->chromosomes[chromidx].hapa;
+        auto hapd = ind2->chromosomes[chromidx].hapb;
 
         std::vector<int> cur_idx = {0, 0, 0, 0};
         std::vector<int> cur_vars = {0, 0, 0, 0};
@@ -139,8 +139,8 @@ adios_sites find_informative_sites_unphased(const Indptr & ind1,
         int rareidx = 0;
         int nrare = rares.size();
 
-        auto miss = setops::union_(ind1->chromosomes[chromidx]->missing,
-                                   ind2->chromosomes[chromidx]->missing);
+        auto miss = setops::union_(ind1->chromosomes[chromidx].missing,
+                                   ind2->chromosomes[chromidx].missing);
 
         int missidx = 0;
         int nmiss = miss.size();
@@ -279,7 +279,7 @@ adios_result adios_pair_unphased(const Indptr_pair& inds,
     Indptr ind1 = inds.first;
     Indptr ind2 = inds.second;
 
-    auto chromobj = ind1->chromosomes[chromidx]->info;
+    auto chromobj = ind1->chromosomes[chromidx].info;
 
     auto useful = find_informative_sites_unphased(ind1,
                   ind2,
