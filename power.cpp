@@ -173,6 +173,7 @@ PowerResult calc_power(Dataset& d, const adios_parameters& params,
     PowerResult results;
     results.segsize = segsize;
 
+    #pragma omp parallel for 
     for (unsigned long int i = 0; i < nrep; ++i) {
         PowerReplicateResult res = power_replicate(d, params, chromidx, segsize);
         results.replicates.push_back(res);
