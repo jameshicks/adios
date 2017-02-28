@@ -29,9 +29,17 @@ Indpair dummy_indpair(const Dataset& d, int chromidx, const chromspan& cs) {
         inds.push_back(&(it->second));
     }
     // Step 1: select 3 random individuals
-    int aidx = randint(0, ninds-1);
-    int bidx = randint(0, ninds-1);
-    int tidx = randint(0, ninds-1);
+    int aidx, bidx, tidx;
+    aidx = randint(0, ninds-1);
+
+    do {
+        bidx = randint(0, ninds-1);
+    } while (bidx == aidx);
+    
+    do {
+        tidx = randint(0, ninds-1);
+    } while (tidx == aidx || tidx == bidx);
+
 
     Individual ind_a = *(inds[aidx]);
     Individual ind_b = *(inds[bidx]);
@@ -140,7 +148,8 @@ PowerReplicateResult power_replicate(const Dataset& d,
     auto& chrominf = d.chromosomes[chromidx];
     std::vector<chromspan> result_spans;
     for (auto& s : res.segments) {
-        chromspan rs = { chrominf->positions[s.full_start], 
+        chromspan rs = { 
+                         chrominf->positions[s.full_start], 
                          chrominf->positions[s.full_stop]
                        };
         
