@@ -12,6 +12,7 @@ namespace adios {
 struct chromspan {
     int start;
     int stop;
+    inline int length(void) const { return stop - start; }
 };
 
 
@@ -24,6 +25,7 @@ struct PowerReplicateResult {
 };
 
 struct PowerResult {
+    int segsize;
     std::vector<PowerReplicateResult> replicates; 
     
     inline int nsuccess(void) const {
@@ -36,16 +38,10 @@ struct PowerResult {
         return (double)nsuccess() / replicates.size(); 
     }
 
-    inline double mean_num_segments(void) const {
-        int i = 0;
-        int n = 0;
-        for (auto& rep : replicates) {
-            n += rep.success;
-            i += rep.success ? rep.segments.size() : 0; 
-        }
+    double mean_num_segments(void) const;
+    std::vector<int> length_diffs(void) const;
+    double prop_detected(void) const; 
 
-        return (double)i / n;
-    }
 };
 
 void copy_genospan(const Individual& from, int hapfrom, Individual& to, int hapto, 

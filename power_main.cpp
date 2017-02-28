@@ -23,6 +23,7 @@
 #include "ArgumentParser.hpp"
 #include "datamodel.hpp"
 #include "FileIOManager.hpp"
+#include "utility.hpp"
 
 
 
@@ -202,13 +203,24 @@ int main(int argc, char** argv) {
 
     int nrep = atoi(args["nrep"][0].c_str());
     
-    log << "size\tnrep\tpower\tmeanseg\n";
+    log << "size\tnrep\tpower\tprop_detected\tmeanseg\tdiff_mean\n";
     for (auto sizestr : args["sizes"]) {
         int size = atoi(sizestr.c_str());
         auto res = adios::calc_power(data, params, 0, size, nrep);    
     
+        auto diffs = res.length_diffs();
+        auto distrib = mean_and_sd(diffs);
+
+        double mu = distrib.first;
+        double sigma = distrib.second;
+
+
         log << size << '\t' << nrep << '\t';
-        log << res.power() << '\t' << res.mean_num_segments() << '\n';
+        log << res.power() << '\t';
+        log << res.prop_detected() << '\t'; 
+        log << res.mean_num_segments() << '\t';
+        log << mu;
+        log << '\n';
 
     }
     

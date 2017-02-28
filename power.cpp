@@ -15,6 +15,10 @@ bool overlaps(const adios::chromspan& s, const adios::chromspan& cs) {
     return ((a <= c && c <= b) || (c <= a && a <= d));
 }
 
+int overlap_amount(const adios::chromspan& a, const adios::chromspan& b) {
+    return std::min(a.stop, b.stop) - std::max(a.start, b.start);
+}
+
 namespace adios {
 
 Indpair dummy_indpair(const Dataset& d, int chromidx, const chromspan& cs) {
@@ -144,15 +148,19 @@ PowerReplicateResult power_replicate(const Dataset& d,
     }
 
     // Step 4: Find segments overlapping the true segment
+    int oa = 0;
+
     for (int i = 0; i < res.segments.size(); ++i) {
         auto& rs = result_spans[i];
         if (overlaps(rs, synthetic)) {
             prr.segments.push_back(res.segments[i]);
+            oa += overlap_amount(rs, synthetic);
         }
     }
 
     prr.success = prr.segments.size() > 0;
     prr.nseg = prr.segments.size();
+    prr.overlap_amount = oa;
 
     return prr;
 }
@@ -163,6 +171,7 @@ PowerResult calc_power(Dataset& d, const adios_parameters& params,
                 unsigned int nrep) {
 
     PowerResult results;
+    results.segsize = segsize;
 
     for (unsigned long int i = 0; i < nrep; ++i) {
         PowerReplicateResult res = power_replicate(d, params, chromidx, segsize);
@@ -171,4 +180,41 @@ PowerResult calc_power(Dataset& d, const adios_parameters& params,
 
     return results;
 }
+
+double PowerResult::mean_num_segments(void) const {
+    int i = 0;
+    int n = 0;
+    for (auto& rep : replicates) {
+        n += rep.success;
+        i += rep.success ? rep.segments.size() : 0; 
+    }
+
+    return (double)i / n;
+}
+
+std::vector<int> PowerResult::length_diffs(void) const {
+    std::vector<int> diffs;
+
+    for (auto& rep : replicates) {
+        if (rep.success) {
+            diffs.push_back(rep.segments[0].length() - segsize);
+        }
+    }
+
+    return diffs;
+}
+
+double PowerResult::prop_detected(void) const {
+    long long int detected  = 0;
+    long long int n = segsize * replicates.size();
+
+    for (auto& rep : replicates) {
+        if (rep.success) {
+            detected += rep.overlap_amount;
+        }
+    }
+
+    return detected / (double)n;
+}
+
 }
