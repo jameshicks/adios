@@ -52,6 +52,8 @@ int main(int argc, char** argv) {
         CommandLineArgument{"err",               "store",     {"0.001"},          1,    "Allele error rate"},
         CommandLineArgument{"transition",        "store",     {"4", "3"},         2,    "IBD entrance/exit penalty: P(Transition) = 10^(-x))"},
         CommandLineArgument{"threads",           "store",     {"1"},              1,    OMP_AVAILABLE ? "Number of threads" : "SUPPRESS"},
+        CommandLineArgument{"sizes",             "store",     {""},              -1,    "Segment sizes to test"},
+        CommandLineArgument{"nrep",              "store",     {"1000"},           1,    "Number of replicates"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
         CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
         CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"}
@@ -88,7 +90,7 @@ int main(int argc, char** argv) {
 
     std::string logfilename;
     if (!args["out"][0].compare("-")) {
-        logfilename = "adios.log";
+        logfilename = "adios_power.log";
     } else {
         logfilename = args["out"][0] + ".log";
     }
@@ -198,13 +200,19 @@ int main(int argc, char** argv) {
     // Precompute the emission matrices.
     params.calculate_emission_mats(data);
 
-    int size = 1000000;
-    int nrep = 1000;
-    auto res = adios::calc_power(data, params, 0, size, nrep);
+    int nrep = atoi(args["nrep"][0].c_str());
+    
+    log << "size\tnrep\tpower\tmeanseg\n";
+    for (auto sizestr : args["sizes"]) {
+        int size = atoi(sizestr.c_str());
+        auto res = adios::calc_power(data, params, 0, size, nrep);    
+    
+        log << size << '\t' << nrep << '\t';
+        log << res.power() << '\t' << res.mean_num_segments() << '\n';
+
+    }
     
 
-    std::cout << size << '\t' << nrep << '\t';
-    std::cout << res.power() << '\t' << res.mean_num_segments() << '\n';
 }
 
 

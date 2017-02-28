@@ -9,7 +9,7 @@ void ArgumentParser::update_args(std::vector<std::string> newargs) {
     using std::string;
     std::map<string, string> parsed_args;
     string cur_flag = "";
-    size_t cur_narg = 0;
+    int cur_narg = 0;
     for (auto it = newargs.begin() + 1; it != newargs.end(); ++it) {
         if (stringops::startswith(*it, "--")) {
             cur_flag = it->substr(2);
@@ -26,8 +26,11 @@ void ArgumentParser::update_args(std::vector<std::string> newargs) {
             }
 
         } else {
-            if (cur_narg < arg_info[cur_flag].nargs) {
+            if (cur_narg < arg_info[cur_flag].nargs || 
+                arg_info[cur_flag].nargs == -1) {
+                
                 args[cur_flag].push_back(*it);
+            
             } else {
                 extras.push_back(*it);
             }
@@ -42,8 +45,7 @@ std::vector<std::string> ArgumentParser::validate_args(void) const {
         CommandLineArgument ai = arg_info.at(it->first);
         if (it->second.front().empty()) {
             errors.push_back("Argument required: " + it->first);
-        }
-        if (ai.nargs && it->second.size() != ai.nargs) {
+        } else if (ai.nargs > 0 && it->second.size() != ai.nargs) {
             errors.push_back("Not enough arguments: " + it->first + " (" + std::to_string(ai.nargs) + " required)");
         }
     }

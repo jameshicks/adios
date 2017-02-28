@@ -8,11 +8,12 @@
 
 #include "stringops.hpp"
 
+
 struct CommandLineArgument {
     std::string label;
     std::string action;
     std::vector<std::string> default_;
-    size_t nargs;
+    int nargs;
     std::string help;
 };
 
