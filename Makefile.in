@@ -32,6 +32,10 @@ power: $(COMMON_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c power_main.cpp -o power_main.o
 	$(CXX) power_main.o $(COMMON_OBJECTS) -o adios_power $(LDFLAGS) $(LIBS)
 
+synthetics: $(COMMON_OBJECTS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c dummy_main.cpp -o dummy_main.o
+	$(CXX) dummy_main.o $(COMMON_OBJECTS) -o synthetic_data $(LDFLAGS) $(LIBS) 
+
 $(COMMON_OBJECTS): %.o: %.cpp 
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
