@@ -119,7 +119,7 @@ inline void Genotypes::set_allele(int markidx, int hapidx, int allele)
     if (allele < 0) {
         missing.push_back(markidx);
     } else {
-        AlleleSites& chromatid = hapidx ? hapa : hapb;
+        AlleleSites& chromatid = hapidx ? hapb : hapa;
         chromatid.push_back(markidx);
     }
 }
