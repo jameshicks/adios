@@ -77,4 +77,6 @@ public:
 
 
 Dataset read_vcf(const std::string& filename, const VCFParams& fileparams);
+void write_vcf(const Dataset& d, const std::string& fn);
+
 #endif

@@ -7,13 +7,10 @@
 
 #include "datamodel.hpp"
 #include "adios.hpp"
+#include "utility.hpp"
+
 namespace adios {
 
-struct chromspan {
-    int start;
-    int stop;
-    inline int length(void) const { return stop - start; }
-};
 
 
 struct PowerReplicateResult {
@@ -44,8 +41,6 @@ struct PowerResult {
 
 };
 
-void copy_genospan(const Individual& from, int hapfrom, Individual& to, int hapto, 
-    int chromidx, const chromspan& cs);
 
 
 Indpair dummy_indpair(const Dataset& d, int chromidx, const chromspan& cs);

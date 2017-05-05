@@ -57,6 +57,11 @@ struct ValueRun {
     int length(void);
 };
 
+inline int randint(int lo, int hi) {
+    // Produce a random interval in the closed interval [lo, hi]
+    return lrand48() % (hi + 1 - lo) + lo;
+}
+
 std::vector<ValueRun> runs_gte(const std::vector<int>& v, int thresh);
 std::vector<ValueRun> runs_gte_classic(std::vector<int>& sequence, int minval, int minlength);
 

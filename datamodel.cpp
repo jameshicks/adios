@@ -11,7 +11,6 @@ Variant::Variant(const std::string& lab, int bp, double maf) {
 //ChromInfo
 void ChromInfo::add_variant(const std::string& lab, int bp, double maf) {
     auto v = Variant(lab, bp, maf);
-    variant_labels.push_back(lab);
     positions.push_back(bp);
     frequencies.push_back(maf);
     variants.push_back(v);
@@ -100,6 +99,10 @@ void Individual::add_empty_chromosome(shared_ptr<ChromInfo> inf) {
     chromosomes.push_back(g);
 }
 
+void Individual::get_empty_chromosomes(const Dataset& d) {
+    for (shared_ptr<ChromInfo> inf : d.chromosomes) add_empty_chromosome(inf);
+}
+
 int Individual::get_minor_allele_count(int chromidx, int markidx) {
     return chromosomes[chromidx].get_minor_allele_count(markidx);
 }
@@ -145,7 +148,7 @@ void Dataset::add_chromosome(const std::string& lab) {
     for (auto it = individuals.begin(); it != individuals.end(); ++it) {
         it->second.add_empty_chromosome(c);
     }
-
+ 
 }
 
 void Dataset::round_frequencies(unsigned int places) {
@@ -164,3 +167,64 @@ void Dataset::floor_frequencies(double floor) {
         }
     }
 }
+
+
+
+void copy_genospan(const Individual& from, int hapfrom, 
+                          Individual& to, int hapto,
+                          int chromidx, const chromspan& cs) {
+    using std::distance;
+    using std::lower_bound;
+    using std::upper_bound;
+
+    ChromInfo& info = *(from.chromosomes[chromidx].info);
+
+
+    int startidx = distance(info.positions.begin(),
+                            lower_bound(info.positions.begin(), 
+                                        info.positions.end(), 
+                                        cs.start)); 
+    
+    int stopidx = distance(info.positions.begin(),
+                           lower_bound(info.positions.begin(), 
+                                       info.positions.end(), 
+                                       cs.stop));
+    
+    AlleleSites templatechrom = hapfrom ? 
+                                from.chromosomes[chromidx].hapb : 
+                                from.chromosomes[chromidx].hapa;
+
+    AlleleSites newchrom;
+    AlleleSites oldchrom = hapto ? 
+                           to.chromosomes[chromidx].hapb : 
+                           to.chromosomes[chromidx].hapa;
+    int maxold = oldchrom.back();
+    int i = 0;
+    while (oldchrom[i] < startidx) {
+        newchrom.push_back(oldchrom[i]);
+        i++;
+    }
+
+    auto copystartit = std::lower_bound(templatechrom.begin(),
+                                        templatechrom.end(),
+                                        startidx);
+    auto copystopit = std::upper_bound(templatechrom.begin(),
+                                       templatechrom.end(),
+                                       stopidx);
+
+    for (auto shared_it = copystartit; shared_it != copystopit; shared_it++) 
+        newchrom.push_back(*shared_it);
+
+    for (auto it = std::lower_bound(oldchrom.begin(), oldchrom.end(), stopidx);
+            it != oldchrom.end();
+            ++it) {
+        newchrom.push_back(*it);
+    }
+
+    if (hapto) {
+        to.chromosomes[chromidx].hapb = newchrom;
+    } else {
+        to.chromosomes[chromidx].hapa = newchrom;
+    }
+}
+

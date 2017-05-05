@@ -18,8 +18,19 @@ using std::shared_ptr;
 // #define protected public
 // #define private public
 
-// typedef std::vector<int> AlleleSites;
 typedef std::vector<int> AlleleSites;
+
+
+struct chromspan {
+    int start;
+    int stop;
+    inline int length(void) const { return stop - start; }
+};
+
+
+class Dataset;
+
+
 
 class Variant
 {
@@ -39,7 +50,6 @@ public:
     void add_variant(const std::string& lab, int bp, double maf);
     size_t nmark(void) const;
     int size(void) const;
-    std::vector<std::string> variant_labels;
     std::vector<int> positions;
     std::vector<double> frequencies;
 
@@ -75,6 +85,7 @@ public:
     std::vector<Genotypes> chromosomes;
 
     void add_empty_chromosome(shared_ptr<ChromInfo> inf);
+    void get_empty_chromosomes(const Dataset& d);
     void set_allele(int chromidx, int markidx, int hapidx, int allele);
     int get_minor_allele_count(int chromidx, int markidx);
     Individual(void);
@@ -106,6 +117,9 @@ public:
     void floor_frequencies(double floor);
 
 };
+
+void copy_genospan(const Individual& from, int hapfrom, Individual& to, int hapto, 
+    int chromidx, const chromspan& cs);
 
 // Inline funcs
 

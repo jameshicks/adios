@@ -1,11 +1,8 @@
 #include "power.hpp"
 
-int randint(int lo, int hi) {
-    // Produce a random interval in the closed interval [lo, hi]
-    return lrand48() % (hi + 1 - lo) + lo;
-}
 
-bool overlaps(const adios::chromspan& s, const adios::chromspan& cs) {
+
+bool overlaps(const chromspan& s, const chromspan& cs) {
     int a = s.start;
     int b = s.stop;
 
@@ -15,7 +12,7 @@ bool overlaps(const adios::chromspan& s, const adios::chromspan& cs) {
     return ((a <= c && c <= b) || (c <= a && a <= d));
 }
 
-int overlap_amount(const adios::chromspan& a, const adios::chromspan& b) {
+int overlap_amount(const chromspan& a, const chromspan& b) {
     return std::min(a.stop, b.stop) - std::max(a.start, b.start);
 }
 
@@ -57,64 +54,6 @@ Indpair dummy_indpair(const Dataset& d, int chromidx, const chromspan& cs) {
 
     Indpair pr = {ind_a, ind_b};
     return pr;
-}
-
-void copy_genospan(const Individual& from, int hapfrom, 
-                          Individual& to, int hapto,
-                          int chromidx, const chromspan& cs) {
-    using std::distance;
-    using std::lower_bound;
-    using std::upper_bound;
-
-    ChromInfo& info = *(from.chromosomes[chromidx].info);
-
-
-    int startidx = distance(info.positions.begin(),
-                            lower_bound(info.positions.begin(), 
-                                        info.positions.end(), 
-                                        cs.start)); 
-    
-    int stopidx = distance(info.positions.begin(),
-                           lower_bound(info.positions.begin(), 
-                                       info.positions.end(), 
-                                       cs.stop));
-    
-    AlleleSites templatechrom = hapfrom ? 
-                                from.chromosomes[chromidx].hapb : 
-                                from.chromosomes[chromidx].hapa;
-
-    AlleleSites newchrom;
-    AlleleSites oldchrom = hapto ? 
-                           to.chromosomes[chromidx].hapb : 
-                           to.chromosomes[chromidx].hapa;
-    int maxold = oldchrom.back();
-    int i = 0;
-    while (oldchrom[i] < startidx) {
-        newchrom.push_back(oldchrom[i]);
-        i++;
-    }
-
-    auto copystartit = std::lower_bound(templatechrom.begin(),
-                                        templatechrom.end(),
-                                        startidx);
-    auto copystopit = std::upper_bound(templatechrom.begin(),
-                                       templatechrom.end(),
-                                       stopidx);
-
-    for (auto shared_it = copystartit; shared_it != copystopit; shared_it++) 
-        newchrom.push_back(*shared_it);
-
-    for (auto it = std::lower_bound(oldchrom.begin(), oldchrom.end(), stopidx);
-            it != oldchrom.end();
-            ++it) {
-        newchrom.push_back(*it);
-    }
-
-    if (hapto) {
-        to.chromosomes[chromidx].hapb = newchrom;
-    } else {
-        to.chromosomes[chromidx].hapa = newchrom;
-    }
 }
 
 

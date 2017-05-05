@@ -4,20 +4,17 @@
 
 // VCF Parsing
 
-VCFRecordGenotypeContainer::VCFRecordGenotypeContainer(size_t n)
-{
+VCFRecordGenotypeContainer::VCFRecordGenotypeContainer(size_t n) {
     ninds = n;
     alts.reserve(2 * ninds);
     missing.reserve(ninds);
 }
 
-double VCFRecordGenotypeContainer::allele_frequency(void) const
-{
+double VCFRecordGenotypeContainer::allele_frequency(void) const {
     return alts.size() / (double)(2 * (ninds - missing.size()));
 }
 
-void VCFRecordGenotypeContainer::invert(void)
-{
+void VCFRecordGenotypeContainer::invert(void) {
     std::vector<size_t> skips;
     std::set_union(missing.begin(), missing.end(),
                    alts.begin(), alts.end(),
@@ -34,16 +31,14 @@ void VCFRecordGenotypeContainer::invert(void)
 
 }
 
-double VCFRecord::get_info_freq(const std::string& info_field)
-{
+double VCFRecord::get_info_freq(const std::string& info_field) {
     std::string val = get_info_by_key(info_field.c_str());
     if (val.empty()) { freq = 0.0; }
     freq = atof(val.c_str());
     return freq;
 }
 
-std::string VCFRecord::get_info_by_key(const char* key)
-{
+std::string VCFRecord::get_info_by_key(const char* key) {
     size_t keylen = strlen(key);
     std::string retval("");
     char* orig_infodup = strdup(infostr.c_str());
@@ -69,8 +64,7 @@ std::string VCFRecord::get_info_by_key(const char* key)
     return retval;
 }
 
-VCFRecord::VCFRecord(const std::string& vcfline)
-{
+VCFRecord::VCFRecord(const std::string& vcfline) {
     using stringops::split;
     using std::string;
 
@@ -118,8 +112,7 @@ VCFRecord::VCFRecord(const std::string& vcfline)
     freq = 0.0;
 }
 
-std::map<std::string, std::string> VCFRecord::infomap(void) const
-{
+std::map<std::string, std::string> VCFRecord::infomap(void) const {
     // Make the info map
 
     using stringops::split;
@@ -141,8 +134,7 @@ std::map<std::string, std::string> VCFRecord::infomap(void) const
     return info;
 }
 
-void VCFRecord::get_minor_alleles(VCFRecordGenotypeContainer& con) const
-{
+void VCFRecord::get_minor_alleles(VCFRecordGenotypeContainer& con) const {
     int gtidx = 0;
     auto gtfpos = format.find("GT");
     for (size_t i = 0; i < gtfpos; ++i) {
@@ -195,13 +187,11 @@ void VCFRecord::get_minor_alleles(VCFRecordGenotypeContainer& con) const
 
 }
 
-int VCFRecord::nalleles(void) const
-{
+int VCFRecord::nalleles(void) const {
     return alleles.size();
 }
 
-bool VCFRecord::is_snv(void) const
-{
+bool VCFRecord::is_snv(void) const {
     for (int i = 0; i < nalleles(); ++i) {
         if (alleles[i].length() > 2) {
             return false;
@@ -210,8 +200,7 @@ bool VCFRecord::is_snv(void) const
     return true;
 }
 
-Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
-{
+Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
     using stringops::split;
     using stringops::endswith;
     using std::vector;
@@ -266,10 +255,10 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
     }
 
     std::vector<Individual*> inds;
-    for (auto v : indlabs) { 
-        inds.push_back(&data.individuals[v]); 
+    for (auto v : indlabs) {
+        inds.push_back(&data.individuals[v]);
     }
-    
+
     int ninds = inds.size();
 
     VCFRecordGenotypeContainer con(ninds);
@@ -349,3 +338,67 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams)
     }
     return data;
 }
+
+std::vector<std::string> chrom2vcf(const Individual& ind, int chromidx) {
+    auto& c = ind.chromosomes[chromidx].info;
+    std::vector<std::string> recs(c->nmark(), "0|0");
+
+    auto& gts = ind.chromosomes[chromidx];
+    for (auto nr : gts.hapa) recs[nr][0] = '1';
+    for (auto nr : gts.hapb) recs[nr][2] = '1';
+
+    for (auto miss : gts.missing) recs[miss] = ".|.";
+
+    return recs;
+}
+
+
+void write_vcf(const Dataset& d, const std::string& fn) {
+
+    // Keep our own set of individual objects
+    std::vector<Individual> inds;
+    for (auto& kv : d.individuals) { inds.push_back(kv.second); }
+
+
+    // open the file and write the header lines
+    DelimitedFileWriter outf(fn, '\t');
+    outf.writeline("##fileformat=VCFv4.2");
+    outf.writeline("##FORMAT=<ID=GT,Number=1,Type=Integer,Description=\"Genotype\">");
+    outf.writeline("##INFO=<ID=AF,Number=A,Type=Float,Description=\"Estimated allele frequency in the range (0,1)\">");
+    std::vector<std::string> headertoks = {"#CHROM", "POS", "ID", "REF", "ALT",
+                                           "QUAL", "FILTER", "INFO", "FORMAT"
+                                          };
+
+    for (auto& ind : inds) { headertoks.push_back(ind.label); }
+
+    outf.writetoks(headertoks);
+
+
+
+    const int ninds = inds.size();
+
+    for (int chromidx = 0; chromidx < d.nchrom(); chromidx++) {
+        auto c = d.chromosomes[chromidx];
+
+        std::vector<std::vector<std::string>> gts;
+        for (auto& ind : inds) {
+            std::vector<std::string> indgts = chrom2vcf(ind, chromidx);
+            gts.push_back(indgts);
+        }
+
+        for (int varidx = 0; varidx < c->nmark(); varidx++) {
+            Variant& v = c->variants[varidx];
+            std::vector<std::string> toks = {c->label,
+                                             std::to_string(v.position),
+                                             v.label,
+                                             "A", "T" , "100", "PASS", ".", "GT"
+                                            };
+            for (auto& g : gts) toks.push_back(g[varidx]);
+            outf.writetoks(toks);
+        }
+
+    }
+
+}
+
+
