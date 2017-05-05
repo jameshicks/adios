@@ -60,4 +60,26 @@ TEST(DataModel, GenotypeMethods) {
     auto observed_hzm_c = d.individuals["C"].chromosomes[0].homozygous_minor();
     CHECK(exp_hzm_c == observed_hzm_c); 
 
+
+    auto gta = d.individuals["A"].chromosomes[0];
+    std::vector<int> exp_hap;
+    std::vector<int> obs;
+    exp_hap = {};
+    obs = d.individuals["A"].chromosomes[0].hapa;
+    CHECK(obs == exp_hap);
+    
+    exp_hap = {1,4};
+    obs = d.individuals["A"].chromosomes[0].hapb;
+    CHECK(obs == exp_hap);
+
+    exp_hap = {1,4};
+    auto gtb = d.individuals["B"].chromosomes[0];
+    CHECK(gtb.hapa == exp_hap);
+    CHECK(gtb.hapb == exp_hap);
+
+    auto gtc = d.individuals["C"].chromosomes[0];
+    exp_hap = {};
+    CHECK(gtc.hapa == exp_hap);
+    exp_hap = {1,2};
+    CHECK(gtc.hapb == exp_hap);
 };
