@@ -79,6 +79,7 @@ public:
     inline bool is_stdout(void) { return f == stdout; }
     DelimitedFileWriter(const std::string& fn, char delimiter);
     void writetoks(const std::vector<std::string>& toks);
+    void writeline(const std::string& line);
 };
 
 class Logstream {

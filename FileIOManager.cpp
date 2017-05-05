@@ -134,6 +134,11 @@ void DelimitedFileWriter::writetoks(const std::vector<std::string>& toks)
     }
 }
 
+void DelimitedFileWriter::writeline(const std::string& line) {
+    write(line); 
+    write("\n");
+}
+
 Logstream::Logstream(const std::string& fn) {
     logfile = std::ofstream(fn);
 }
