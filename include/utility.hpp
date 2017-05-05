@@ -13,18 +13,9 @@
 std::vector<std::string> slice(std::vector<std::string>& inp,
                                size_t start,
                                size_t stop);
-size_t indexof(std::vector<std::string>& v, std::string& val);
 
 std::string sfloat(double v, unsigned int places);
 std::string bp_formatter(unsigned int bp);
-std::vector<double> arange(double start, double stop, double step);
-
-template <typename C, typename V>
-V mean(const C& seq) {
-    double inc = 0;
-    for (V val : seq) inc += val;
-    return inc / seq.size();
-}
 
 template <typename C>
 std::pair<double, double> mean_and_sd(const C& container) {

@@ -15,17 +15,6 @@ std::vector<std::string> slice(std::vector<std::string>& inp, size_t start, size
 
 
 
-size_t indexof(std::vector<std::string>& v, std::string& val) {
-    std::string tok;
-    for (size_t i = 0; i < v.size(); ++i) {
-        tok = v[i];
-        if (!tok.compare(val)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 std::string sfloat(double v, unsigned int places) {
     std::stringstream s;
     s << std::fixed << std::setprecision(places) << v;
@@ -37,18 +26,6 @@ std::string bp_formatter(unsigned int bp) {
     if (bp > 1e6) return sfloat(bp/1e6, 2) + "Mb";
     if (bp > 1e3) return sfloat(bp/1e3, 2) + "kb";
     return std::to_string(bp);
-}
-
-std::vector<double> arange(double start, double stop, double step) {
-    std::vector<double> out;
-    
-    double v = start; 
-    while (v <= stop) {
-        out.push_back(v);
-        v += step;
-    }
-
-    return out;
 }
 
 
