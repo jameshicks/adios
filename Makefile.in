@@ -44,6 +44,6 @@ clean:
 
 unittest: $(COMMON_OBJECTS) $(UNITTEST_OBJECTS)
 	$(CXX) $(CPPU_CXXFLAGS) $(INCLUDES) -c unittests/AllTests.cpp -o AllTests.o
-	$(CXX) $(COMMON_OBJECTS) $(UNITTEST_OBJECTS) -o unittests/unittester $(CPPU_LDFLAGS)
+	$(CXX) $(COMMON_OBJECTS) $(UNITTEST_OBJECTS) -o unittests/unittester $(CPPU_LDFLAGS)  $(LDFLAGS) $(LIBS)
 	./unittests/unittester -v
 
