@@ -80,6 +80,12 @@ int main(int argc, char** argv) {
     }
     auto args = parser.args;
 
+    int rseed;
+    if (args["seed"][0] != "TIME") {
+        rseed = std::stoi(args["seed"][0]);
+        srand48(rseed);
+        std::cout  << "Random Seed: " << rseed << '\n';
+    } 
 
     std::cout << "Reading data\n";
     VCFParams vcfp = {false, false, true, "AF"};
