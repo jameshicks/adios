@@ -97,7 +97,7 @@ public:
 class Dataset
 {
 public:
-    std::map<std::string, Individual> individuals;
+    std::vector<Individual> individuals;
     std::vector<shared_ptr<ChromInfo>> chromosomes;
     
     // Number of individuals

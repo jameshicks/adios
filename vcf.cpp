@@ -254,12 +254,7 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
         }
     }
 
-    std::vector<Individual*> inds;
-    for (auto v : indlabs) {
-        inds.push_back(&data.individuals[v]);
-    }
-
-    int ninds = inds.size();
+    int ninds = data.ninds();
 
     VCFRecordGenotypeContainer con(ninds);
 
@@ -321,14 +316,13 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
 
 
         for (size_t i = 0; i < con.missing.size(); ++i) {
-            inds[i]->set_allele(chromidx, markidx, 0, -1);
+            data.individuals[con.missing[i]].set_allele(chromidx, markidx, 0, -1);
         }
 
 
         for (size_t i = 0; i < con.alts.size(); ++i) {
             std::div_t divres = std::div(con.alts[i], 2);
-            auto ind = inds[divres.quot];
-            ind->set_allele(chromidx, markidx, divres.rem, 1);
+            data.individuals[divres.quot].set_allele(chromidx, markidx, divres.rem, 1);
         }
 
         markidx++;
@@ -355,11 +349,6 @@ std::vector<std::string> chrom2vcf(const Individual& ind, int chromidx) {
 
 void write_vcf(const Dataset& d, const std::string& fn) {
 
-    // Keep our own set of individual objects
-    std::vector<Individual> inds;
-    for (auto& kv : d.individuals) { inds.push_back(kv.second); }
-
-
     // open the file and write the header lines
     DelimitedFileWriter outf(fn, '\t');
     outf.writeline("##fileformat=VCFv4.2");
@@ -369,19 +358,17 @@ void write_vcf(const Dataset& d, const std::string& fn) {
                                            "QUAL", "FILTER", "INFO", "FORMAT"
                                           };
 
-    for (auto& ind : inds) { headertoks.push_back(ind.label); }
+    for (auto& ind : d.individuals) { headertoks.push_back(ind.label); }
 
     outf.writetoks(headertoks);
 
-
-
-    const int ninds = inds.size();
+    const int ninds = d.ninds();
 
     for (int chromidx = 0; chromidx < d.nchrom(); chromidx++) {
         auto c = d.chromosomes[chromidx];
 
         std::vector<std::vector<std::string>> gts;
-        for (auto& ind : inds) {
+        for (auto& ind : d.individuals) {
             std::vector<std::string> indgts = chrom2vcf(ind, chromidx);
             gts.push_back(indgts);
         }

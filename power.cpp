@@ -21,10 +21,6 @@ namespace adios {
 Indpair dummy_indpair(const Dataset& d, int chromidx, const chromspan& cs) {
     int ninds = d.ninds();
 
-    std::vector<const Individual*> inds;
-    for (auto it = d.individuals.begin(); it != d.individuals.end(); ++it) {
-        inds.push_back(&(it->second));
-    }
     // Step 1: select 3 random individuals
     int aidx, bidx, tidx;
     aidx = randint(0, ninds-1);
@@ -37,11 +33,11 @@ Indpair dummy_indpair(const Dataset& d, int chromidx, const chromspan& cs) {
         tidx = randint(0, ninds-1);
     } while (tidx == aidx || tidx == bidx);
 
-
-    Individual ind_a = *(inds[aidx]);
-    Individual ind_b = *(inds[bidx]);
-    const Individual& ind_template = *(inds[tidx]);
     // Step 2: make copies of two of them
+    Individual ind_a = d.individuals[aidx];
+    Individual ind_b = d.individuals[bidx];
+    const Individual& ind_template = d.individuals[tidx];
+
 
 
     // Step 3: from the third individual copy a genome region to one chromosome of the

@@ -199,16 +199,13 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
 {
     using namespace combinatorics;
 
-    std::vector<Individual> inds;
-    for (auto pr = d.individuals.begin(); pr != d.individuals.end(); ++pr) { inds.push_back(pr->second);}
-
     std::vector<std::string> header = {
         "IND_1", "IND_2", "CHROM", "START", "END", "LENGTH",
         "STATE", "NMARK", "NRARE", "NERR", "LOD"
     };
     out.writetoks(header);
 
-    long ninds = inds.size();
+    long ninds = d.ninds();
     long npairs = nCk(ninds, 2);
 
     for (size_t chridx = 0; chridx < d.nchrom(); chridx++) {
@@ -226,8 +223,8 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
                                         ninds,
                                         2);
 
-            Individual& ind1 = inds[indices[0]];
-            Individual& ind2 = inds[indices[1]];
+            Individual& ind1 = d.individuals[indices[0]];
+            Individual& ind2 = d.individuals[indices[1]];
 
             adios_result res = adios_pair_unphased(ind1, ind2, chridx, params);
 

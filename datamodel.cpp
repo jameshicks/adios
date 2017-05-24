@@ -137,7 +137,7 @@ size_t Dataset::nexcluded(void) const {
 }
 
 void Dataset::add_individual(const std::string& lab) {
-    individuals[lab] = Individual(lab);
+    individuals.push_back(Individual(lab));
 
 }
 
@@ -145,8 +145,8 @@ void Dataset::add_chromosome(const std::string& lab) {
     shared_ptr<ChromInfo> c(new ChromInfo(lab));
     chromosomes.push_back(c);
 
-    for (auto it = individuals.begin(); it != individuals.end(); ++it) {
-        it->second.add_empty_chromosome(c);
+    for (Individual& ind : individuals) {
+        ind.add_empty_chromosome(c);
     }
  
 }
