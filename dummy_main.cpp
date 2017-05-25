@@ -20,7 +20,7 @@ struct synthseg {
     bool overlaps(const synthseg& other) {
         if (chromlab.compare(other.chromlab) != 0) return false;
         return  ((start <= other.start && other.start <= stop) ||
-                 (other.start <= start && start <= stop));
+                 (other.start <= start && start <= other.stop));
     }
 
     std::string to_string(void) {
@@ -35,22 +35,22 @@ AlleleSites synthetic_chromosome(Dataset& d, int chromidx, int chunksize) {
 
     AlleleSites newchrom;
     int cur_pos = 0;
-    int chromsize = d.chromosomes[chromidx]->size();  
-    while (cur_pos < chromsize) { 
-        int indidx = randint(0, d.ninds()-1);
+    int chromsize = d.chromosomes[chromidx]->size();
+    while (cur_pos < chromsize) {
+        int indidx = randint(0, d.ninds() - 1);
         Individual& template_ind = d.individuals[indidx];
 
         Genotypes& template_pair = template_ind.chromosomes[chromidx];
-        AlleleSites& template_chrom = randint(0,1) ? template_pair.hapa : template_pair.hapb;
+        AlleleSites& template_chrom = randint(0, 1) ? template_pair.hapa : template_pair.hapb;
         auto copystartit = std::upper_bound(template_chrom.begin(), template_chrom.end(), cur_pos);
-        auto copystopit = std::upper_bound(template_chrom.begin(), template_chrom.end(), cur_pos+chunksize);
-        
+        auto copystopit = std::upper_bound(template_chrom.begin(), template_chrom.end(), cur_pos + chunksize);
+
         for (auto it = copystartit; it != copystopit; it++) newchrom.push_back(*it);
 
         cur_pos += chunksize;
-    } 
+    }
 
-    return newchrom; 
+    return newchrom;
 }
 
 Individual dummy_ind(Dataset& d,  int chunksize) {
@@ -65,7 +65,7 @@ Individual dummy_ind(Dataset& d,  int chunksize) {
         dummy.chromosomes[chromidx].hapb = synthetic_chromosome(d, chromidx, chunksize);
     }
 
-    return dummy; 
+    return dummy;
 }
 
 
@@ -97,14 +97,14 @@ int main(int argc, char** argv) {
 
     try {
         parser.update_args(rawargs);
-        
+
     } catch (std::out_of_range& e) {
         std::cerr << e.what() << '\n';
     }
     auto args = parser.args;
 
     if (parser.has_arg("help")) {
-        parser.print_help(); 
+        parser.print_help();
         return 0;
     }
 
@@ -113,7 +113,19 @@ int main(int argc, char** argv) {
         rseed = std::stoi(args["seed"][0]);
         srand48(rseed);
         std::cout  << "Random Seed: " << rseed << '\n';
-    } 
+    }
+
+
+    std::cout << "Input file: " << args["vcf"][0] << '\n';
+    std::cout << "Output prefix: " << args["out"][0] << '\n';
+    std::cout << "Synthetic individuals: " << args["synthetics"][0] << '\n';
+    std::cout << "Synthetic segments: " << args["nseg"][0] << '\n';
+
+    if (std::stol(args["nseg"][0]) > 0) {
+        std::cout << "Synthetic segment length: " << args["seglen"][0] << '\n';
+    }
+
+    std::cout << "Random seed: " << args["seed"][0] << "\n\n";
 
     std::cout << "Reading data\n";
     VCFParams vcfp = {false, false, true, "AF"};
@@ -138,11 +150,11 @@ int main(int argc, char** argv) {
     int chunksize = std::stod(args["chunksize"][0]);
 
     int nsynth = std::stol(args["synthetics"][0]);
-    
+
     std::vector<Individual> dummies;
     for (int rep = 0; rep < nsynth; rep++) {
-        std::stringstream ss; 
-        ss << args["prefix"][0] << "_" << rep; 
+        std::stringstream ss;
+        ss << args["prefix"][0] << "_" << rep;
 
         Individual dummy = dummy_ind(data, chunksize);
         dummy.label = ss.str();
@@ -157,12 +169,13 @@ int main(int argc, char** argv) {
 
 
     for (int i = 0; i < nseg; i++) {
-        int aidx, bidx, chridx; 
-        aidx = randint(0, nsynth-1);
+        std::cout << "Synth seg " << i << '\n';
+        int aidx, bidx, chridx;
+        aidx = randint(0, nsynth - 1);
 
         do {
-            bidx = randint(0, nsynth-1);
-        } while (aidx != bidx);
+            bidx = randint(0, nsynth - 1);
+        } while (aidx == bidx);
 
         Individual& inda = dummies[aidx];
         Individual& indb = dummies[bidx];
@@ -171,15 +184,27 @@ int main(int argc, char** argv) {
 
         if (data.chromosomes[chridx]->size() < segsize) throw std::out_of_range("Chromosome too small");
 
-        bool nooverlaps = true;
+        bool any_overlaps = false;
         synthseg s;
         do {
-            int start = randint(1, data.chromosomes[chridx]->size());
+            int start = randint(1, data.chromosomes[chridx]->size() - segsize);
             s = {inda.label, indb.label, data.chromosomes[chridx]->label, start, (int)(start + segsize)};
 
-            for (auto& existing : synthsegs) nooverlaps &= !(s.overlaps(existing));
+            // Check if this segment overlaps anything we've made previously
+            bool any_overlaps = false;
 
-        } while (!nooverlaps);
+            for (auto& existing : synthsegs) {
+                // To overlap, one of the individuals must be in the existing segment
+                bool inds_in_common ((s.ind_a.compare(existing.ind_a) == 0) ||
+                                     (s.ind_a.compare(existing.ind_b) == 0) ||
+                                     (s.ind_b.compare(existing.ind_a) == 0) ||
+                                     (s.ind_b.compare(existing.ind_b) == 0));
+                any_overlaps = any_overlaps || (inds_in_common && s.overlaps(existing));
+
+            }
+
+
+        } while (any_overlaps);
 
         chromspan cs = {s.start, s.stop};
         copy_genospan(inda, 0, indb, 0, chridx, cs);
@@ -194,7 +219,7 @@ int main(int argc, char** argv) {
         for (auto& s : synthsegs) {
             ts.writeline(s.to_string());
         }
-    } 
+    }
 
     // Add the synthetic individuals to the dataset
     for (auto& dummy : dummies) {
