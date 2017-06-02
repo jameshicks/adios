@@ -168,7 +168,14 @@ void Dataset::floor_frequencies(double floor) {
     }
 }
 
+void Dataset::subset(std::set<std::string> indlabs) {
+    std::vector<Individual> newinds; 
 
+    for (int i = 0; i < individuals.size(); ++i) {
+        if (indlabs.count(individuals[i].label) != 0) newinds.push_back(individuals[i]); 
+    }
+    individuals = newinds;
+}
 
 void copy_genospan(const Individual& from, int hapfrom, 
                           Individual& to, int hapto,

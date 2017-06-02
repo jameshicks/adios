@@ -115,6 +115,7 @@ public:
     void add_chromosome(const std::string& label);
     void round_frequencies(unsigned int places);
     void floor_frequencies(double floor);
+    void subset(std::set<std::string> indlabs);
 
 };
 

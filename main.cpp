@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/resource.h>
+#include <set>
+
 
 #include "config.h"
 
@@ -52,6 +54,7 @@ int main(int argc, char** argv) {
         //                  Argument           Action       Default               narg  help string
         CommandLineArgument{"vcf",               "store",     {""},               1,    "VCF input file"},
         CommandLineArgument{"vcf_freq",          "store",     {"-"},              1,    "VCF INFO field containing allele frequency"},
+        CommandLineArgument{"include",           "store",     {""},               1,    "Subset of individuals to include"},
         CommandLineArgument{"out",               "store",     {"-"},              1,    "Output file prefix"},
         CommandLineArgument{"keep_singletons",   "store_yes", {"NO"},             0,    "Include singleton variants from dataset"},
         CommandLineArgument{"keep_monomorphic",  "store_yes", {"NO"},             0,    "Include monomorphic positions in dataset"},
@@ -212,6 +215,20 @@ int main(int argc, char** argv) {
     // Precompute the emission matrices.
     params.calculate_emission_mats(data);
 
+    // Extract the subset individuals if provided
+    if (args["include"][0].length()) {
+        std::set<std::string> includelabs;
+        UncompressedFile incf(args["include"][0]);
+        while (incf.good()) {
+            std::string indlab = incf.getline();
+            includelabs.insert(indlab);
+        }
+
+        data.subset(includelabs);
+    }
+
+    log << "Retained " << data.ninds() << " individuals\n";
+    
     std::string output_filename = !(args["out"][0].compare("-")) ? 
                                    "-" : (args["out"][0] + ".ibd");  
     DelimitedFileWriter output(output_filename, '\t');
