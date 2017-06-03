@@ -2,6 +2,9 @@
 #include <vector>
 #include <stdlib.h>
 #include <algorithm>
+#include <set>
+#include <fstream>
+
 
 #include "config.h"
 #include "adios.hpp"
@@ -9,6 +12,7 @@
 #include "vcf.hpp"
 #include "ArgumentParser.hpp"
 #include "utility.hpp"
+#include "setops.hpp"
 
 struct synthseg {
     std::string ind_a;
@@ -31,18 +35,49 @@ struct synthseg {
     }
 };
 
-AlleleSites synthetic_chromosome(Dataset& d, int chromidx, int chunksize) {
+AlleleSites errored_chromosome(AlleleSites& c, int nmark, double error_rate) {
+    std::vector<int> errsites;
+    for (int i = 0; i < nmark; i++) {
+        if (drand48() < error_rate) errsites.push_back(i);
+    }
+
+
+    // Use symmetric difference: when a site is in both the chromosome and the
+    // error sites, it is changing to the major allele and must be removed from
+    // the chromosome. Otherwise it must be added to the chromosome. Symmetric
+    // difference will do both easily.
+    AlleleSites nc = setops::symmetric_difference(c, errsites);
+    return nc;
+}
+
+void add_error(Individual& ind, double error_rate) {
+    for (int cidx = 0; cidx < ind.chromosomes.size(); cidx++) {
+        auto& gt = ind.chromosomes[cidx];
+        int nmark = gt.info->nmark();
+        gt.hapa = errored_chromosome(gt.hapa, nmark, error_rate);
+        gt.hapb = errored_chromosome(gt.hapb, nmark, error_rate);
+
+    }
+}
+
+AlleleSites synthetic_chromosome(Dataset& d, int chromidx, int chunksize, std::string fn) {
 
     AlleleSites newchrom;
     int cur_pos = 0;
     int chromsize = d.chromosomes[chromidx]->size();
+
+    std::ofstream chunkfile; chunkfile.open(fn);
+
     while (cur_pos < chromsize) {
         int indidx = randint(0, d.ninds() - 1);
         Individual& template_ind = d.individuals[indidx];
 
         Genotypes& template_pair = template_ind.chromosomes[chromidx];
-        AlleleSites& template_chrom = randint(0, 1) ? template_pair.hapa : template_pair.hapb;
-        auto copystartit = std::upper_bound(template_chrom.begin(), template_chrom.end(), cur_pos);
+        int whichhap = randint(0,1);
+        AlleleSites& template_chrom = whichhap ? template_pair.hapa : template_pair.hapb;
+
+        chunkfile << cur_pos << '\t' << cur_pos + chunksize << '\t' << template_ind.label << '\t' << whichhap << '\n'; 
+        auto copystartit = std::lower_bound(template_chrom.begin(), template_chrom.end(), cur_pos);
         auto copystopit = std::upper_bound(template_chrom.begin(), template_chrom.end(), cur_pos + chunksize);
 
         for (auto it = copystartit; it != copystopit; it++) newchrom.push_back(*it);
@@ -50,19 +85,26 @@ AlleleSites synthetic_chromosome(Dataset& d, int chromidx, int chunksize) {
         cur_pos += chunksize;
     }
 
+    chunkfile.close();
     return newchrom;
 }
 
-Individual dummy_ind(Dataset& d,  int chunksize) {
+Individual dummy_ind(Dataset& d,  int chunksize, std::string label) {
 
     Individual dummy;
     dummy.get_empty_chromosomes(d);
+    dummy.label = label;
 
     int ninds = d.ninds();
 
     for (int chromidx = 0; chromidx < d.nchrom(); chromidx++) {
-        dummy.chromosomes[chromidx].hapa = synthetic_chromosome(d, chromidx, chunksize);
-        dummy.chromosomes[chromidx].hapb = synthetic_chromosome(d, chromidx, chunksize);
+        std::stringstream fn1;
+        fn1 << label << "_chr" << d.chromosomes[chromidx]->label << "_0"  << ".chunks"; 
+        dummy.chromosomes[chromidx].hapa = synthetic_chromosome(d, chromidx, chunksize, fn1.str());
+
+        std::stringstream fn2;
+        fn2 << label << "_chr" << d.chromosomes[chromidx]->label << "_1"  << ".chunks";
+        dummy.chromosomes[chromidx].hapb = synthetic_chromosome(d, chromidx, chunksize, fn2.str());
     }
 
     return dummy;
@@ -90,6 +132,7 @@ int main(int argc, char** argv) {
         CommandLineArgument{"seed",       "store",     {"TIME"},      1,     "RNG seed"},
         CommandLineArgument{"nseg",       "store",     {"0"},         1,     "Number of synthetic segments"},
         CommandLineArgument{"seglen",     "store",     {"0"},         1,     "Length of synthetic segment"},
+        CommandLineArgument{"error",      "store",     {"0"},         1,     "Genotype error rate"},
         CommandLineArgument{"help",       "store_yes", {"NO"},        0,     "Print this help message" }
     };
 
@@ -156,8 +199,7 @@ int main(int argc, char** argv) {
         std::stringstream ss;
         ss << args["prefix"][0] << "_" << rep;
 
-        Individual dummy = dummy_ind(data, chunksize);
-        dummy.label = ss.str();
+        Individual dummy = dummy_ind(data, chunksize, ss.str());
 
         dummies.push_back(dummy);
     }
@@ -169,7 +211,6 @@ int main(int argc, char** argv) {
 
 
     for (int i = 0; i < nseg; i++) {
-        std::cout << "Synth seg " << i << '\n';
         int aidx, bidx, chridx;
         aidx = randint(0, nsynth - 1);
 
@@ -221,13 +262,21 @@ int main(int argc, char** argv) {
         }
     }
 
+    double error_rate = std::stod(args["error"][0]);
+    if (error_rate > 0) {
+        std::cout << "Adding error\n";
+        for (auto& ind : dummies) add_error(ind, error_rate);
+    }
     // Add the synthetic individuals to the dataset
     for (auto& dummy : dummies) {
         data.individuals.push_back(dummy);
     }
 
     std::cout << "Writing output VCF\n";
-    write_vcf(data, args["out"][0]);
+
+    std::stringstream ofnss;
+    ofnss << args["out"][0] << ".vcf";
+    write_vcf(data, ofnss.str());
 
     return 0;
 }

@@ -57,7 +57,9 @@ int main(int argc, char** argv) {
         CommandLineArgument{"nrep",              "store",     {"1000"},           1,    "Number of replicates"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
         CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
-        CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"}
+        CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"},
+        CommandLineArgument{"seed",              "store",     {"TIME"},      1,         "RNG seed"},
+        
     };
     for (auto argi : arginfo) { parser.add_argument(argi); }
 
@@ -124,6 +126,12 @@ int main(int argc, char** argv) {
     }
 #endif
 
+    int rseed;
+    if (args["seed"][0] != "TIME") {
+        rseed = std::stoi(args["seed"][0]);
+        srand48(rseed);
+        std::cout  << "Random Seed: " << rseed << '\n';
+    }
 
     adios::adios_parameters params = adios::params_from_args(args);
 
@@ -136,6 +144,7 @@ int main(int argc, char** argv) {
     log << "Minimum markers to declare IBD: " << params.min_mark << '\n';
     log << "Genotype error rate: " << params.err_rate << '\n';
     log << "Decoding: " << (params.viterbi ? "MAP" : "ML") << '\n';
+    log << "Random seed: " << args["seed"][0] << "\n\n";
 
 #ifdef HAVE_OPENMP
     log << "Threads: " << nthreads << '\n';
@@ -203,13 +212,17 @@ int main(int argc, char** argv) {
 
     int nrep = atoi(args["nrep"][0].c_str());
     
-    log << "size\tnrep\tpower\tprop_detected\tmeanseg\tdiff_mean\tdiff_sd\n";
+    log << "size\tnrep\tpower\tprop_detected\tmeanseg\tdiff_mean\tdiff_sd\tabsdiff_mean\tabsdiff_sd\n";
     for (auto sizestr : args["sizes"]) {
         int size = atoi(sizestr.c_str());
         auto res = adios::calc_power(data, params, 0, size, nrep);    
     
         auto diffs = res.length_diffs();
         auto distrib = mean_and_sd(diffs);
+
+        std::vector<int> absdiffs;
+        for (auto d : diffs) { absdiffs.push_back(abs(d)); }
+        auto absdistrib = mean_and_sd(absdiffs);
 
         double mu = distrib.first;
         double sigma = distrib.second;
@@ -219,7 +232,8 @@ int main(int argc, char** argv) {
         log << res.power() << '\t';
         log << res.prop_detected() << '\t'; 
         log << res.mean_num_segments() << '\t';
-        log << mu << '\t' << sigma;
+        log << mu << '\t' << sigma << '\t';
+        log << absdistrib.first << '\t' << absdistrib.second;
         log << '\n';
 
     }
