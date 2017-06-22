@@ -189,7 +189,8 @@ adios_sites find_informative_sites_unphased(const Individual& ind1,
 
         } while (current_position != max_pos);
 
-        return make_pair(states, informatives);
+        adios_sites selected = { ind1.label, ind2.label, states, informatives, chromobj };
+        return selected;
 
     }
 
@@ -261,24 +262,16 @@ void adios(Dataset& d, const adios_parameters& params, DelimitedFileWriter& out)
     if (!out.is_stdout()) { std::cout << '\n' << std::flush;  }
 }
 
-
-adios_result adios_pair_unphased(const Individual& ind1, const Individual& ind2,
-        int chromidx,
-        const adios_parameters& params)
-{
+adios_result run_adios_pair_unphased(const adios_sites& useful,  
+                                     const adios_parameters& params) {
     using Linalg::Matrix;
 
-    adios_result res; 
+    adios_result res;
+    
+    auto observations = useful.states;
+    auto informative_sites = useful.sites;
+    auto chromobj = useful.info;
 
-    auto chromobj = ind1.chromosomes[chromidx].info;
-
-    auto useful = find_informative_sites_unphased(ind1,
-                                                  ind2,
-                                                  chromidx,
-                                                  params.rare_sites[chromidx]);
-
-    auto observations = useful.first;
-    std::vector<int> informative_sites(useful.second.begin(), useful.second.end());
     int nmark = informative_sites.size();
     res.nmark = nmark;
 
@@ -297,7 +290,7 @@ adios_result adios_pair_unphased(const Individual& ind1, const Individual& ind2,
     std::vector<ValueRun> runs = runs_gte_classic(hidden_states, 1, 5);
 
     for (ValueRun r : runs) {
-        Segment seg(ind1, ind2, r, chromobj,
+        Segment seg(useful.ind1_label, useful.ind2_label, r, chromobj,
                     observations, emissions,
                     informative_sites, params);
 
@@ -306,11 +299,31 @@ adios_result adios_pair_unphased(const Individual& ind1, const Individual& ind2,
         }
     }
 
-    return res;
+    return res;    
+
 }
 
-Segment::Segment(const Individual& a,
-                 const Individual& b,
+
+adios_result adios_pair_unphased(const Individual& ind1, const Individual& ind2,
+        int chromidx,
+        const adios_parameters& params)
+{
+ 
+    auto useful = find_informative_sites_unphased(ind1,
+                                                  ind2,
+                                                  chromidx,
+                                                  params.rare_sites[chromidx]);
+
+    auto res = run_adios_pair_unphased(useful, params);
+
+    return res;
+
+}
+
+
+
+Segment::Segment(const std::string& a,
+                 const std::string& b,
                  ValueRun& run,
                  Chromptr c,
                  std::vector<int>& obs,
@@ -319,8 +332,8 @@ Segment::Segment(const Individual& a,
                  const adios_parameters& params)
 {
 
-    ind1 = a.label;
-    ind2 = b.label;
+    ind1 = a;
+    ind2 = b;
     chrom = c;
 
     start = run.start;

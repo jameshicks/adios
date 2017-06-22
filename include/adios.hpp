@@ -12,6 +12,8 @@
 #include <iomanip>
 #include <algorithm>
 #include <utility>
+#include <unordered_map>
+
 
 #include "combinatorics.hpp"
 #include "Linalg.hpp"
@@ -24,9 +26,16 @@
 namespace adios {
 
 
-typedef std::pair<std::vector<int>, std::vector<int>> adios_sites;
 typedef std::shared_ptr<ChromInfo> Chromptr;
 using std::pair;
+
+struct adios_sites {
+    std::string ind1_label;
+    std::string ind2_label;
+    std::vector<int> states;
+    std::vector<int> sites;
+    Chromptr info; 
+};
 
 struct Indpair {
     Individual ind1;
@@ -76,7 +85,7 @@ public:
         return chrom->positions[full_stop] - chrom->positions[full_start];
     }
 
-    Segment(const Individual& a, const Individual& b, ValueRun& run, Chromptr c,
+    Segment(const std::string& a, const std::string& b, ValueRun& run, Chromptr c,
             std::vector<int>& obs, std::vector<Matrix*>& emissions,
             std::vector<int>& adiossites, const adios_parameters& params);
 
