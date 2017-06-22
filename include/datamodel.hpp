@@ -65,6 +65,11 @@ public:
     AlleleSites hapa;
     AlleleSites hapb;
     AlleleSites missing;
+
+    AlleleSites het; 
+    AlleleSites hzm;
+    AlleleSites hma;
+
     shared_ptr<ChromInfo> info;
 
     std::vector<int> todense(int haplotype);
@@ -73,7 +78,10 @@ public:
     AlleleSites heterozygous(void) const;
     AlleleSites homozygous_minor(void) const;
     AlleleSites has_minor_allele(void) const;
+    void finalize(void);
+
     std::vector<int> dosages(void);
+    
     Genotypes(shared_ptr<ChromInfo> c);
 
 };
@@ -88,6 +96,8 @@ public:
     void get_empty_chromosomes(const Dataset& d);
     void set_allele(int chromidx, int markidx, int hapidx, int allele);
     int get_minor_allele_count(int chromidx, int markidx);
+    void finalize(void);
+
     Individual(void);
     Individual(const std::string& lab);
     // ~Individual(void);
@@ -116,6 +126,7 @@ public:
     void round_frequencies(unsigned int places);
     void floor_frequencies(double floor);
     void subset(std::set<std::string> indlabs);
+    void finalize(void);
 
 };
 

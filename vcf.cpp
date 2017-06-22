@@ -330,6 +330,7 @@ Dataset read_vcf(const std::string & filename, const VCFParams& fileparams) {
 
         last_chromid = rec.chrom;
     }
+    data.finalize();
     return data;
 }
 

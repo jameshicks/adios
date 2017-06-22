@@ -66,6 +66,12 @@ AlleleSites Genotypes::has_minor_allele(void) const {
     return setops::union_(hapa, hapb);
 }
 
+void Genotypes::finalize(void) {
+    het = heterozygous();
+    hzm = homozygous_minor();
+    hma = has_minor_allele();
+}
+
 std::vector<int> Genotypes::dosages(void) {
     std::vector<int> outp(info->nmark());
 
@@ -105,6 +111,12 @@ void Individual::get_empty_chromosomes(const Dataset& d) {
 
 int Individual::get_minor_allele_count(int chromidx, int markidx) {
     return chromosomes[chromidx].get_minor_allele_count(markidx);
+}
+
+void Individual::finalize(void) {
+    for (int i = 0; i < chromosomes.size(); i++) {
+        chromosomes[i].finalize();
+    }
 }
 
 // Dataset
@@ -165,6 +177,12 @@ void Dataset::floor_frequencies(double floor) {
             double fq = c->frequencies[i];
             c->frequencies[i] = fq < floor ? floor : fq;
         }
+    }
+}
+
+void Dataset::finalize(void) {
+    for (Individual& ind : individuals) {
+        ind.finalize();
     }
 }
 
