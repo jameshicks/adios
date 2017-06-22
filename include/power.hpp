@@ -48,11 +48,13 @@ chromspan random_range(std::shared_ptr<ChromInfo>& c,  int size);
 PowerReplicateResult power_replicate(const Dataset& d,
                                      const adios_parameters& params,
                                      int chromidx,
-                                     unsigned int segsize);
+                                     unsigned int segsize, 
+                                     double err_rate);
 PowerResult calc_power(Dataset& d, const adios_parameters& params,
                 int chromidx,
                 unsigned int segsize,
-                unsigned int nrep);
+                unsigned int nrep, 
+                double err_rate);
 
 
 }

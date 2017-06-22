@@ -235,3 +235,28 @@ void copy_genospan(const Individual& from, int hapfrom,
     }
 }
 
+AlleleSites errored_chromosome(AlleleSites& c, int nmark, double error_rate) {
+    std::vector<int> errsites;
+    for (int i = 0; i < nmark; i++) {
+        if (drand48() < error_rate) errsites.push_back(i);
+    }
+
+
+    // Use symmetric difference: when a site is in both the chromosome and the
+    // error sites, it is changing to the major allele and must be removed from
+    // the chromosome. Otherwise it must be added to the chromosome. Symmetric
+    // difference will do both easily.
+    AlleleSites nc = setops::symmetric_difference(c, errsites);
+    return nc;
+}
+
+
+void add_error(Individual& ind, double error_rate) {
+    for (int cidx = 0; cidx < ind.chromosomes.size(); cidx++) {
+        auto& gt = ind.chromosomes[cidx];
+        int nmark = gt.info->nmark();
+        gt.hapa = errored_chromosome(gt.hapa, nmark, error_rate);
+        gt.hapb = errored_chromosome(gt.hapb, nmark, error_rate);
+
+    }
+}

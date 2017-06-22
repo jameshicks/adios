@@ -55,10 +55,11 @@ int main(int argc, char** argv) {
         CommandLineArgument{"threads",           "store",     {"1"},              1,    OMP_AVAILABLE ? "Number of threads" : "SUPPRESS"},
         CommandLineArgument{"sizes",             "store",     {""},              -1,    "Segment sizes to test"},
         CommandLineArgument{"nrep",              "store",     {"1000"},           1,    "Number of replicates"},
+        CommandLineArgument{"simerr",            "store",     {"0"},              1,    "Simulation error rate"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
         CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
         CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"},
-        CommandLineArgument{"seed",              "store",     {"TIME"},      1,         "RNG seed"},
+        CommandLineArgument{"seed",              "store",     {"TIME"},           1,         "RNG seed"},
         
     };
     for (auto argi : arginfo) { parser.add_argument(argi); }
@@ -206,7 +207,8 @@ int main(int argc, char** argv) {
         log << '\n';
     }
 
-
+    double err = std::stod(args["simerr"][0]);
+    log << "Simulation error rate: " << err << '\n';
     // Precompute the emission matrices.
     params.calculate_emission_mats(data);
 
@@ -215,7 +217,7 @@ int main(int argc, char** argv) {
     log << "size\tnrep\tpower\tprop_detected\tmeanseg\tdiff_mean\tdiff_sd\tabsdiff_mean\tabsdiff_sd\n";
     for (auto sizestr : args["sizes"]) {
         int size = atoi(sizestr.c_str());
-        auto res = adios::calc_power(data, params, 0, size, nrep);    
+        auto res = adios::calc_power(data, params, 0, size, nrep, err);    
     
         auto diffs = res.length_diffs();
         auto distrib = mean_and_sd(diffs);

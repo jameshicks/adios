@@ -66,13 +66,16 @@ chromspan random_range(const std::shared_ptr<ChromInfo>& c, int size) {
 PowerReplicateResult power_replicate(const Dataset& d,
                                      const adios_parameters& params,
                                      int chromidx,
-                                     unsigned int segsize) {
+                                     unsigned int segsize, 
+                                     double err_rate) {
     PowerReplicateResult prr;
 
     // Step 1: Pick a span;
     chromspan synthetic = random_range(d.chromosomes[chromidx], segsize);
     // Step 2: create the dummy indpair
     Indpair dummy_pair = dummy_indpair(d, chromidx, synthetic);
+    add_error(dummy_pair.ind1, err_rate);
+    add_error(dummy_pair.ind2, err_rate);
 
     // Step 3: Run adios_pair_unphased on the pair
     adios_result res = adios_pair_unphased(dummy_pair.ind1, 
@@ -109,17 +112,20 @@ PowerReplicateResult power_replicate(const Dataset& d,
     return prr;
 }
 
+// PowerReplicateResult fpr_replicate(const Dataset& d, )
+
 PowerResult calc_power(Dataset& d, const adios_parameters& params,
                 int chromidx,
                 unsigned int segsize,
-                unsigned int nrep) {
+                unsigned int nrep,
+                double err_rate) {
 
     PowerResult results;
     results.segsize = segsize;
 
     #pragma omp parallel for 
     for (unsigned long int i = 0; i < nrep; ++i) {
-        PowerReplicateResult res = power_replicate(d, params, chromidx, segsize);
+        PowerReplicateResult res = power_replicate(d, params, chromidx, segsize, err_rate);
         results.replicates.push_back(res);
     }
 

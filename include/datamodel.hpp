@@ -139,4 +139,8 @@ inline void Genotypes::set_allele(int markidx, int hapidx, int allele)
     }
 }
 
+
+
+void add_error(Individual& ind, double error_rate);
+
 #endif
