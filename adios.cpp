@@ -1,5 +1,5 @@
 #include "adios.hpp"
-
+#include <assert.h>
 namespace adios
 {
 
@@ -82,6 +82,7 @@ adios_parameters params_from_args(std::map<std::string, std::vector<std::string>
     params.min_lod = stod(args["minlod"][0]);
 
     params.viterbi = (args["viterbi"][0].compare("YES") == 0);
+    params.finemap_ends = (args["fine_ends"][0].compare("YES") == 0);
 
     return params;
 
@@ -120,7 +121,8 @@ void adios_parameters::calculate_emission_mats(const Dataset& data)
 adios_sites find_informative_sites_unphased(const Individual& ind1,
     const Individual& ind2,
     const int chromidx,
-    const std::vector<int>& rares)
+    const std::vector<int>& rares, 
+    const std::vector<int>& requests)
     {
         auto chromobj = ind1.chromosomes[chromidx].info;
         int max_pos = chromobj->positions.back() + 100;
@@ -141,6 +143,9 @@ adios_sites find_informative_sites_unphased(const Individual& ind1,
 
         int missidx = 0;
         int nmiss = miss.size();
+
+        int requidx = 0;
+        int nrequ = requests.size();
 
         const int nmark = chromobj->nmark();
 
@@ -165,18 +170,20 @@ adios_sites find_informative_sites_unphased(const Individual& ind1,
 
             if (current_position == max_pos) { break; }
 
-            while (rareidx < nrare && rares[rareidx] < current_position) { rareidx++; }
-            while (missidx < nmiss && miss[missidx]  < current_position) { missidx++; }
+            while (rareidx < nrare && rares[rareidx]    < current_position) { rareidx++; }
+            while (missidx < nmiss && miss[missidx]     < current_position) { missidx++; }
+            while (requidx < nrequ && requests[requidx] < current_position) { requidx++; }
 
             bool is_rare = current_position == rares[rareidx];
             bool is_miss = (nmiss > 0 && current_position == miss[missidx]);
+            bool is_requ = (nrequ > 0 && current_position == requests[requidx]);
 
             int s1 = (cur_vars[0] == current_position) + (cur_vars[1] == current_position);
             int s2 = (cur_vars[2] == current_position) + (cur_vars[3] == current_position);
             int state = 3 * s1 + s2;
 
             bool srv = is_shared_rv(state) && is_rare;
-            if ((state == 2 || state == 6 || srv) && !is_miss) {
+            if ((state == 2 || state == 6 || srv || is_requ) && !is_miss) {
                 informatives.push_back(current_position);
                 states.push_back(state);
             }
@@ -316,7 +323,34 @@ adios_result adios_pair_unphased(const Individual& ind1, const Individual& ind2,
 
     auto res = run_adios_pair_unphased(useful, params);
 
-    return res;
+    if (res.segments.size() == 0 || !params.finemap_ends) return res;
+
+    AlleleSites requested;
+    for (auto& segment : res.segments) {
+        
+        int cur_start = useful.sites[segment.start];
+        int new_start = segment.start > 0 ? useful.sites[segment.start - 1] : 0;
+        
+
+        int cur_stop = useful.sites[segment.stop];
+        int new_stop = (segment.stop + 1) >= useful.sites.size() ? 
+                       useful.info->positions.size() - 1 : 
+                       useful.sites[segment.stop + 1];
+
+
+        for (int i = new_start; i < cur_start; i++) { requested.push_back(i); }
+        for (int i = cur_stop; i < new_stop; i++) { requested.push_back(i); }
+
+    }
+    
+
+    auto useful2 = find_informative_sites_unphased(ind1, 
+                                                   ind2, 
+                                                   chromidx, 
+                                                   params.rare_sites[chromidx], 
+                                                   requested);
+    auto res2 = run_adios_pair_unphased(useful2, params); 
+    return res2;
 
 }
 

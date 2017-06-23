@@ -185,6 +185,7 @@ int main(int argc, char** argv) {
     std::cout << data.ninds() << " individuals\n";
 
     for (auto& c : data.chromosomes) {
+        std::cout  << "Chromosome " <<  c->label << ": " << c->size() << '\n';
         for (auto& kv : c->exclusions) {
             std::cout << "Excluded: " << kv.second << " " << kv.first << "\n";
         }

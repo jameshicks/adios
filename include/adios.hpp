@@ -58,18 +58,18 @@ struct adios_parameters {
     void calculate_emission_mats(const Dataset& d); // Precompute emission matrices
     std::map<double, Matrix> emission_mats;         // Precomputed emission matrices indexed by frequency
     bool viterbi;                                   // Use MAP decoding
+    bool finemap_ends;                              // Use all available genotypes around segment ends
 };
 
 
 class Segment {
-private:
+public:
     std::string ind1;  // The first individual
     std::string ind2;  // The second individual
     Chromptr chrom;  // Chromosome info
 
     size_t start;
     size_t stop;
-public:
 
     size_t full_start;
     size_t full_stop;
@@ -135,7 +135,8 @@ Matrix unphased_emission_matrix(double q);
 adios_sites find_informative_sites_unphased(const Individual& ind1,
                                             const Individual& ind2,
                                             int chromidx,
-                                            const AlleleSites& rares);
+                                            const AlleleSites& rares,
+                                            const AlleleSites& requests=AlleleSites());
 
  
 // Perform adios on the entire dataset d using parameters `params`

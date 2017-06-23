@@ -68,7 +68,9 @@ int main(int argc, char** argv) {
         CommandLineArgument{"threads",           "store",     {"1"},              1,    OMP_AVAILABLE ? "Number of threads" : "SUPPRESS"},
         CommandLineArgument{"help",              "store_yes", {"NO"},             0,    "Display this help message"   },
         CommandLineArgument{"version",           "store_yes", {"NO"},             0,    "Print version information"   },
+        CommandLineArgument{"fine_ends",         "store_yes", {"NO"},             0,    "Fine-map segment ends with all available genotypes"},
         CommandLineArgument{"viterbi",           "store_yes", {"NO"},             0,    "Use maximum a posteriori decoding"}
+
     };
     for (auto argi : arginfo) { parser.add_argument(argi); }
 
