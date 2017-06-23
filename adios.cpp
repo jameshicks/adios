@@ -125,10 +125,10 @@ adios_sites find_informative_sites_unphased(const Individual& ind1,
         auto chromobj = ind1.chromosomes[chromidx].info;
         int max_pos = chromobj->positions.back() + 100;
 
-        auto hapa = ind1.chromosomes[chromidx].hapa;
-        auto hapb = ind1.chromosomes[chromidx].hapb;
-        auto hapc = ind2.chromosomes[chromidx].hapa;
-        auto hapd = ind2.chromosomes[chromidx].hapb;
+        const auto& hapa = ind1.chromosomes[chromidx].hapa;
+        const auto& hapb = ind1.chromosomes[chromidx].hapb;
+        const auto& hapc = ind2.chromosomes[chromidx].hapa;
+        const auto& hapd = ind2.chromosomes[chromidx].hapb;
 
         std::vector<int> cur_idx = {0, 0, 0, 0};
         std::vector<int> cur_vars = {0, 0, 0, 0};
